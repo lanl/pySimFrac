@@ -1,6 +1,16 @@
 # pySimFrac
 Python module for synthetic generation of rough fracture surfaces
 
+# Setting up pySimFrac
+
+
+
+## Clone the dnfWorks repository
+
+    $ git clone git@github.com:lanl/pySimFrac.git
+
+
+# Open-Source License
 
 This program is Open-Source under the BSD-3 License.
  
