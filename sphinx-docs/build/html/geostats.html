@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoStatical analysis &mdash; pySimFrac</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=f2a433a1"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Effective Aperture" href="effective_aperture.html" />
+    <link rel="prev" title="General Functions" href="general.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="pysimfrac.html" class="icon icon-home">
+            pySimFrac
+              <img src="_static/surface.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                1.0, LANL
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Welcome to pySimFrac documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="generation_methods.html">Generation Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="general.html">General Functions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">GeoStatical analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#variogram">Variogram</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pysimfrac.src.analysis.geostats_variogram.plot_variogram"><code class="docutils literal notranslate"><span class="pre">plot_variogram()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#autocorrelation-function">Autocorrelation Function</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pysimfrac.src.analysis.geostats_acf.compute_acf"><code class="docutils literal notranslate"><span class="pre">compute_acf()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#probability-density-function">Probability Density Function</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#module-pysimfrac.src.analysis.geostats">PDFs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pysimfrac.src.analysis.geostats.get_surface_pdf"><code class="docutils literal notranslate"><span class="pre">get_surface_pdf()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#moments">Moments</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="effective_aperture.html">Effective Aperture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulations.html">Integration with Flow Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gallery.html">Image Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pysimfrac_object.html">SimFrac object - all functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="pysimfrac.html">pySimFrac</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="pysimfrac.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">GeoStatical analysis</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/geostats.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="geostatical-analysis">
+<span id="simfrac-geostats"></span><h1>GeoStatical analysis<a class="headerlink" href="#geostatical-analysis" title="Link to this heading"></a></h1>
+<p>Computing geostatistical information can be measured on fracture surfaces and projected aperture.</p>
+<section id="variogram">
+<h2>Variogram<a class="headerlink" href="#variogram" title="Link to this heading"></a></h2>
+<p>We compute the empirical semivariogram for a surface as</p>
+<div class="math notranslate nohighlight">
+\[\hat{\gamma}(h\pm \delta) = \frac{1}{2 |N(h\pm \delta)|} \Sigma_{(i,j)\in N(h \pm \delta)} |z_i - z_j|^2\]</div>
+<p>The variogram is computed using the <a class="reference external" href="https://pypi.org/project/scikit-gstat/">skgstat module</a>. Please see that module for detailed documenation.</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">pysimfrac.src.analysis.geostats_variogram.</span></span><span class="sig-name descname"><span class="pre">compute_variogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_lag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_lags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'spherical'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pysimfrac/src/analysis/geostats_variogram.html#compute_variogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Compute the variogram of the surface using scikit-gstat.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>self</strong> (<em>object</em>) – simFrac Class</p></li>
+<li><p><strong>surface</strong> (<em>str</em>) – Name of desired surface acf to plot. Options are ‘aperture’, ‘top’, ‘bottom’, or ‘all’. Default value is ‘all’</p></li>
+<li><p><strong>num_samples</strong> (<em>int</em>) – Number of random samples used to compute the variogram</p></li>
+<li><p><strong>max_lag</strong> (<em>int</em>) – Maximum lag distance (unitless length).</p></li>
+<li><p><strong>num_lags</strong> (<em>int</em>) – Number of lag bins. Default is 10</p></li>
+<li><p><strong>model</strong> (<em>str</em>) – See <a class="reference external" href="https://scikit-gstat.readthedocs.io">https://scikit-gstat.readthedocs.io</a> for model details. Default is spherical</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>scikit-gstat variogram object is attached to the simFrac object.</p>
+<p>Reference:
+Mirko Mälicke, Egil Möller, Helge David Schneider, &amp; Sebastian Müller. (2021, May 28).</p>
+<p>mmaelicke/scikit-gstat: A scipy flavoured geostatistical variogram analysis toolbox (Version v0.6.0). Zenodo. <a class="reference external" href="http://doi.org/10.5281/zenodo.4835779">http://doi.org/10.5281/zenodo.4835779</a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">pysimfrac.src.analysis.geostats_variogram.</span></span><span class="sig-name descname"><span class="pre">single_field_variogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_lag</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_lags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pysimfrac/src/analysis/geostats_variogram.html#single_field_variogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Compute the variogram of a single field using scikit-gstat</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>self</strong> (<em>object</em>) – simFrac Class</p></li>
+<li><p><strong>surface</strong> (<em>str</em>) – Name of desired surface acf to plot. Options are ‘aperture’, ‘top’, or ‘bottom’</p></li>
+<li><p><strong>num_samples</strong> (<em>int</em>) – Number of random samples used to compute the variogram</p></li>
+<li><p><strong>max_lag</strong> (<em>int</em>) – Maximum lag distance (unitless length).</p></li>
+<li><p><strong>num_lags</strong> (<em>int</em>) – Number of lag bins. Default is 10</p></li>
+<li><p><strong>model</strong> (<em>str</em>) – See <a class="reference external" href="https://scikit-gstat.readthedocs.io">https://scikit-gstat.readthedocs.io</a> for model details. Default is spherical</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>scikit-gstat variogram object is attached to the simFrac object.</p>
+<p>Requesting more than 10,000 samples can take a while.</p>
+</dd></dl>
+
+<p>To plot the emperical semi-variogram along with model, use plot_variogram described below</p>
+<dl class="py function" id="module-pysimfrac.src.analysis.geostats_variogram">
+<dt class="sig sig-object py" id="pysimfrac.src.analysis.geostats_variogram.plot_variogram">
+<span class="sig-prename descclassname"><span class="pre">pysimfrac.src.analysis.geostats_variogram.</span></span><span class="sig-name descname"><span class="pre">plot_variogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_lags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pysimfrac/src/analysis/geostats_variogram.html#plot_variogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pysimfrac.src.analysis.geostats_variogram.plot_variogram" title="Link to this definition"></a></dt>
+<dd><p>Creates a plot of the autocorrelation function for surfaces.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>self</strong> (<em>object</em>) – simFrac Class</p></li>
+<li><p><strong>surface</strong> (<em>str</em>) – Name of desired surface acf to plot. Options are ‘aperture’, ‘top’, ‘bottom’, or ‘all’. Default value is ‘all’</p></li>
+<li><p><strong>figname</strong> (<em>str</em>) – Name of figure to be saved. If figname is None (default), then no figure is saved.</p></li>
+<li><p><strong>show_lags</strong> (<em>bool</em>) – True / False plot variogram as a function of Lag (unitless) or Lag Distance (units of grid resolution)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>None</p>
+</dd></dl>
+
+<figure class="align-center" id="id1">
+<img alt="Figure Not Found" src="_images/variogram.png" />
+<figcaption>
+<p><span class="caption-text"><em>Variogram of a surface generated using the spectral method</em></span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="autocorrelation-function">
+<h2>Autocorrelation Function<a class="headerlink" href="#autocorrelation-function" title="Link to this heading"></a></h2>
+<p>We can computer the emperical auto correlation function in x and y directions on each surface. The correlation length in those direcitons is estimated using the first zero crossing of the autocorrelation funciton.</p>
+<dl class="py function" id="module-pysimfrac.src.analysis.geostats_acf">
+<dt class="sig sig-object py" id="pysimfrac.src.analysis.geostats_acf.compute_acf">
+<span class="sig-prename descclassname"><span class="pre">pysimfrac.src.analysis.geostats_acf.</span></span><span class="sig-name descname"><span class="pre">compute_acf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_lags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pysimfrac/src/analysis/geostats_acf.html#compute_acf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pysimfrac.src.analysis.geostats_acf.compute_acf" title="Link to this definition"></a></dt>
+<dd><p>Compute the correlation length of a field, both in x and y direction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>self</strong> (<em>object</em>) – simFrac Class</p></li>
+<li><p><strong>surface</strong> (<em>str</em>) – Named of desired surface to plot. Options are ‘aperture’, ‘top’, ‘bottom’, and ‘all’(default).</p></li>
+<li><p><strong>num_lag</strong> (<em>int</em>) – Maximum number of lags. If no value is provided, num_lags is set to 1/4 the domain size in that direction.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Autocorrelation functions and first crossing estimates of correlation lengths are attached to the simfrac object.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">pysimfrac.src.analysis.geostats_acf.</span></span><span class="sig-name descname"><span class="pre">plot_acf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pysimfrac/src/analysis/geostats_acf.html#plot_acf"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Creates a plot of the autocorrelation function for surfaces.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>self</strong> (<em>object</em>) – simFrac Class</p></li>
+<li><p><strong>surface</strong> (<em>str</em>) – Name of desired surface acf to plot. Options are ‘aperture’, ‘top’, ‘bottom’, or ‘all’. Default value is ‘all’</p></li>
+<li><p><strong>figname</strong> (<em>str</em>) – Name of figure to be saved. If figname is None (default), then no figure is saved.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>fig</strong> (<em>Figure</em>)</p></li>
+<li><p><strong>ax</strong> (<em>Axes</em>)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The autocorrelation functions will be computed if they have not be computed already.</p>
+</dd></dl>
+
+<figure class="align-center" id="id2">
+<img alt="Figure Not Found" src="_images/acf.png" />
+<figcaption>
+<p><span class="caption-text"><em>Autocorrelation functions of a surface generated using the spectral method</em></span><a class="headerlink" href="#id2" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="probability-density-function">
+<h2>Probability Density Function<a class="headerlink" href="#probability-density-function" title="Link to this heading"></a></h2>
+<p>The empirical probability density of the surfaces can be directly observed.</p>
+<section id="module-pysimfrac.src.analysis.geostats">
+<span id="pdfs"></span><h3>PDFs<a class="headerlink" href="#module-pysimfrac.src.analysis.geostats" title="Link to this heading"></a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="pysimfrac.src.analysis.geostats.get_surface_pdf">
+<span class="sig-prename descclassname"><span class="pre">pysimfrac.src.analysis.geostats.</span></span><span class="sig-name descname"><span class="pre">get_surface_pdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bins</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_low</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_high</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_edge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'center'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pysimfrac/src/analysis/geostats.html#get_surface_pdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pysimfrac.src.analysis.geostats.get_surface_pdf" title="Link to this definition"></a></dt>
+<dd><p>create probability density function of a surface</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>surface</strong> (<em>string</em>) – Select the surface of the fracture, Acceptable surfaces are ‘top’, ‘bottom’, ‘aperture’.</p></li>
+<li><p><strong>num_bins</strong> (<em>int</em>) – Number of bins in the pdf</p></li>
+<li><p><strong>spacing</strong> (<em>string</em>) – spacing for the pdf, options are linear and log, default is linear binning.</p></li>
+<li><p><strong>x</strong> (<em>array</em>) – array of bin edges</p></li>
+<li><p><strong>weights</strong> (<em>array</em>) – weights corresponding to vals to be used to create a weighted pdf</p></li>
+<li><p><strong>a_low</strong> (<em>float</em>) – lower value of bin range. If no value provided 0.95*min(vals) is used</p></li>
+<li><p><strong>a_high</strong> (<em>float</em>) – upper value of bin range. If no value is provided max(vals) is used</p></li>
+<li><p><strong>bin_edge</strong> (<em>string</em>) – which bin edge is returned. options are left, center, and right</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>bx</strong> (<em>array</em>) – bin edges or centers (x values of the pdf)</p></li>
+<li><p><strong>pdf</strong> (<em>array</em>) – values of the pdf, normalized so the Riemann sum(pdf*dx) = 1.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Below is an example of the PDF plot</p>
+<figure class="align-center">
+<img alt="Figure Not Found" src="_images/pdf.png" />
+</figure>
+</section>
+<section id="moments">
+<h3>Moments<a class="headerlink" href="#moments" title="Link to this heading"></a></h3>
+<p>The first four moments of the surface distributions can be directly computed.</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">pysimfrac.src.analysis.geostats.</span></span><span class="sig-name descname"><span class="pre">compute_moments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pysimfrac/src/analysis/geostats.html#compute_moments"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Compute the moments of the distribution to screen</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>self</strong> (<em>object</em>) – simFrac Class</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>None</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">pysimfrac.src.analysis.geostats.</span></span><span class="sig-name descname"><span class="pre">print_moments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pysimfrac/src/analysis/geostats.html#print_moments"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Print the moments of the distribution to screen</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>self</strong> (<em>object</em>) – simFrac Class</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>None</p>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="general.html" class="btn btn-neutral float-left" title="General Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="effective_aperture.html" class="btn btn-neutral float-right" title="Effective Aperture" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Los Alamos National Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
