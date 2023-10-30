@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pysimfrac.src.analysis.effective_aperture.effective_aperture &#8212; pySimFrac</title>
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/alabaster.css?v=cb25574f" />
+    <script src="../../../../../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../../../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pysimfrac.src.analysis.effective_aperture.effective_aperture</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pysimfrac.src.general.helper_functions</span> <span class="kn">import</span> <span class="n">print_error</span><span class="p">,</span> <span class="n">print_warning</span>
+
+<span class="k">def</span> <span class="nf">gmean_effective_aperture</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Estimates the effective aperture of the fracture using the geometric mean</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    --------------</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------------</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    ---------------</span>
+<span class="sd">        Adds value to the effective_aperture dictionary on the simfrac class. </span>
+
+<span class="sd">        self.effective_aperture[&#39;gmean&#39;] </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">gmean</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--&gt; Estimating the effective aperture using the geometric mean&quot;</span><span class="p">)</span>
+    <span class="n">beff</span> <span class="o">=</span> <span class="n">gmean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aperture</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ny</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;--&gt; Gmean - effective aperture : </span><span class="si">{</span><span class="n">beff</span><span class="si">:</span><span class="s1">0.2e</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="c1"># self.effective_aperture.update({&#39;gmean&#39;: beff})</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">effective_aperture</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="s1">&#39;gmean&#39;</span><span class="p">,</span> <span class="n">beff</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">hmean_effective_aperture</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Estimates the effective aperture of the fracture using the harmonic mean</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    --------------</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------------</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    ---------------</span>
+<span class="sd">        Adds value to the effective_aperture dictionary on the simfrac class. </span>
+
+<span class="sd">        self.effective_aperture[&#39;hmean&#39;] </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">hmean</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--&gt; Estimating the effective aperture using the harmonic mean&quot;</span><span class="p">)</span>
+    <span class="n">beff</span> <span class="o">=</span> <span class="n">hmean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aperture</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ny</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;--&gt; hmean - effective aperture : </span><span class="si">{</span><span class="n">beff</span><span class="si">:</span><span class="s1">0.2e</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="c1"># self.effective_aperture.update({&#39;gmean&#39;: beff})</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">effective_aperture</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="s1">&#39;hmean&#39;</span><span class="p">,</span> <span class="n">beff</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">mean_effective_aperture</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Estimates the effective aperture of the fracture using the arthimatic mean</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    --------------</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------------</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    ---------------</span>
+<span class="sd">        Adds value to the effective_aperture dictionary on the simfrac class. </span>
+
+<span class="sd">        self.effective_aperture[&#39;mean&#39;] </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--&gt; Estimating the effective aperture using the arthimatic mean&quot;</span><span class="p">)</span>
+    <span class="n">beff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aperture</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ny</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;--&gt; Arthimatic mean - effective aperture : </span><span class="si">{</span><span class="n">beff</span><span class="si">:</span><span class="s1">0.2e</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="c1"># self.effective_aperture.update({&#39;gmean&#39;: beff})</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">effective_aperture</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="n">beff</span><span class="p">)</span>
+
+<div class="viewcode-block" id="get_effective_aperture">
+<a class="viewcode-back" href="../../../../../effective_aperture.html#pysimfrac.src.analysis.effective_aperture.effective_aperture.get_effective_aperture">[docs]</a>
+<span class="k">def</span> <span class="nf">get_effective_aperture</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Estimate the effective aperture of the fractures. </span>
+
+<span class="sd">    Models:</span>
+<span class="sd">        - numerical : Estimates the effective aperture of the fracture by solving the Darcy flow equations using a Laplace equation for pressure in 2-dimensions.</span>
+<span class="sd">        - gmean : Geometric average</span>
+<span class="sd">        - hmean : Harmonic average</span>
+<span class="sd">        - mean : Arthimatic average (amean, mean, average, arthimatic)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------------</span>
+<span class="sd">        model : string</span>
+<span class="sd">            Currently available models: numerical, gmean, hmean, amean</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    ----------------</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    ----------------</span>
+<span class="sd">        Adds value to the effective_aperture dictionary on the simfrac class. </span>
+
+<span class="sd">        self.effective_aperture[&#39;&lt;model&gt;&#39;] </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--&gt; Computing effective aperture&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;numerical&quot;</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">numerical_effective_aperture</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;gmean&quot;</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gmean_effective_aperture</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;hmean&quot;</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hmean_effective_aperture</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;amean&quot;</span> <span class="ow">or</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;mean&quot;</span> <span class="ow">or</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;average&quot;</span> <span class="ow">or</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;arthimatic&quot;</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_effective_aperture</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">print_warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;--&gt; Unknown effective aperture model. </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--&gt; Computing effective aperture - complete</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../../../index.html">
+              <img class="logo" src="../../../../../_static/surface.png" alt="Logo"/>
+            </a></p>
+<h3><a href="../../../../../index.html">Table of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../intro.html">Welcome to pySimFrac documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../generation_methods.html">Generation Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../general.html">General Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../geostats.html">GeoStatical analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../effective_aperture.html">Effective Aperture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../simulations.html">Integration with Flow Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../gallery.html">Image Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../pysimfrac_object.html">SimFrac object - all functions</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Los Alamos National Laboratory.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

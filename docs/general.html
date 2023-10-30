@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>General Functions &#8212; pySimFrac</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=cb25574f" />
+    <script src="_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="GeoStatical analysis" href="geostats.html" />
+    <link rel="prev" title="Generation Methods" href="generation_methods.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="general-functions">
+<span id="simfrac-general"></span><h1>General Functions<a class="headerlink" href="#general-functions" title="Link to this heading">¶</a></h1>
+<section id="input-output">
+<h2>Input / Output<a class="headerlink" href="#input-output" title="Link to this heading">¶</a></h2>
+<section id="pickle-binary">
+<h3>Pickle binary<a class="headerlink" href="#pickle-binary" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">pysimfrac.src.io.dump_pickle.</span></span><span class="sig-name descname"><span class="pre">to_pickle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pickle_filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pysimfrac/src/io/dump_pickle.html#to_pickle"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Saves the DFN object into a pickle format</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Object</strong> (<a class="reference internal" href="generation_methods.html#pysimfrac.src.general.SimFrac" title="pysimfrac.src.general.SimFrac"><em>SimFrac</em></a>) – </p></li>
+<li><p><strong>pickle_filename</strong> (<em>string</em>) – Name of file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>None</p>
+</dd></dl>
+
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">myFrac</span><span class="o">.</span><span class="n">to_pickle</span><span class="p">(</span><span class="s1">&#39;myfrac.pkl&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py function" id="module-pysimfrac.src.io.dump_pickle">
+<dt class="sig sig-object py" id="pysimfrac.src.io.dump_pickle.from_pickle">
+<span class="sig-prename descclassname"><span class="pre">pysimfrac.src.io.dump_pickle.</span></span><span class="sig-name descname"><span class="pre">from_pickle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pysimfrac/src/io/dump_pickle.html#from_pickle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pysimfrac.src.io.dump_pickle.from_pickle" title="Link to this definition">¶</a></dt>
+<dd><p>Loads the simfrac object from a pickle format</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>self</strong> (<em>simfrac Object</em>) – </p></li>
+<li><p><strong>filename</strong> (<em>string</em>) – name of pickle DFN object</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>simfrac object</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+</dd></dl>
+
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">myFrac</span> <span class="o">=</span> <span class="n">SimFrac</span><span class="p">(</span><span class="n">pickle_file</span> <span class="o">=</span> <span class="s2">&quot;myfrac.pkl&quot;</span> <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="ascii">
+<h3>ASCII<a class="headerlink" href="#ascii" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">pysimfrac.src.io.dump_ascii.</span></span><span class="sig-name descname"><span class="pre">dump_ascii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pysimfrac/src/io/dump_ascii.html#dump_ascii"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Writes a surface fields to ascii files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>self</strong> (<em>object</em>) – simFrac Class</p></li>
+<li><p><strong>surface</strong> (<em>str</em>) – Named of desired surface to write to file. Options are ‘aperture’, ‘top’, ‘bottom’, and ‘all’(default).</p></li>
+<li><p><strong>filename_prefix</strong> (<em>str</em>) – Prefix for filename</p></li>
+<li><p><strong>coordinates</strong> (<em>bool</em>) – True / False to write x/y coordinates to file</p></li>
+<li><p><strong>indices</strong> (<em>bool</em>) – True / False to write i/j indices to file</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Files written out are aperture.dat, top.dat, and bottom.dat</p>
+</dd></dl>
+
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">myFrac</span><span class="o">.</span><span class="n">dump_ascii</span><span class="p">(</span><span class="n">surface</span> <span class="o">=</span> <span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">filename_prefix</span> <span class="o">=</span> <span class="s1">&#39;myfrac&#39;</span><span class="p">,</span> <span class="n">coordinates</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/surface.png" alt="Logo"/>
+            </a></p>
+<h3><a href="index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Welcome to pySimFrac documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="generation_methods.html">Generation Methods</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">General Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#input-output">Input / Output</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pickle-binary">Pickle binary</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pysimfrac.src.io.dump_pickle.from_pickle"><code class="docutils literal notranslate"><span class="pre">from_pickle()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ascii">ASCII</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="geostats.html">GeoStatical analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="effective_aperture.html">Effective Aperture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulations.html">Integration with Flow Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gallery.html">Image Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pysimfrac_object.html">SimFrac object - all functions</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="generation_methods.html" title="previous chapter">Generation Methods</a></li>
+      <li>Next: <a href="geostats.html" title="next chapter">GeoStatical analysis</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/general.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Los Alamos National Laboratory.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/general.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
