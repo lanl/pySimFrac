@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Effective Aperture &#8212; pySimFrac</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=cb25574f" />
+    <script src="_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Integration with Flow Simulators" href="simulations.html" />
+    <link rel="prev" title="GeoStatical analysis" href="geostats.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="effective-aperture">
+<span id="simfrac-effective-aperture"></span><h1>Effective Aperture<a class="headerlink" href="#effective-aperture" title="Link to this heading">¶</a></h1>
+<p>Estimations of the effective properties from the structure of the surfaces are also provided by pySimFrac. These estimations are categorized into two types. The first are analytical and empirically derived estimations of the effective hydraulic aperture and the second are numerical approximations.  The first estimations includes standard approximations such as various means, e.g., arithmetic, harmonic, and geometric, as well as several models proposed in the literature. Most of the models proposed in the literature use moments of the aperture distribution, which can be directly computed using the analysis toolkit. In principle, any effective hydraulic model with geo-statistical parameters can be added to pySimFrac. The second type of approximations are obtained by numerical inversion of the Darcy equation with a spatially variable permeability field inferred using a local cubic law from the aperture field. Note, that other functional relationships between aperture and permeability can be readily applied as well.  We obtain pressure and volumetric flow rates by solving the standard flow equations with variable coefficients discretized using a second-order finite scheme.  Flow is driven by Dirchelet pressure boundary conditions in one primary direction to obtain estimates of effective permeability in that direction, which is then converted to an effective hydraulic aperture.</p>
+<section id="estimate-effective-aperture">
+<h2>Estimate Effective Aperture<a class="headerlink" href="#estimate-effective-aperture" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">pysimfrac.src.analysis.effective_aperture.effective_aperture.</span></span><span class="sig-name descname"><span class="pre">get_effective_aperture</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pysimfrac/src/analysis/effective_aperture/effective_aperture.html#get_effective_aperture"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Estimate the effective aperture of the fractures.</p>
+<dl class="simple">
+<dt>Models:</dt><dd><ul class="simple">
+<li><p>numerical : Estimates the effective aperture of the fracture by solving the Darcy flow equations using a Laplace equation for pressure in 2-dimensions.</p></li>
+<li><p>gmean : Geometric average</p></li>
+<li><p>hmean : Harmonic average</p></li>
+<li><p>mean : Arthimatic average (amean, mean, average, arthimatic)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model</strong> (<em>string</em>) – Currently available models: numerical, gmean, hmean, amean</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Adds value to the effective_aperture dictionary on the simfrac class.</p>
+<p>self.effective_aperture[‘&lt;model&gt;’]</p>
+</dd></dl>
+
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># make fracture</span>
+<span class="n">myfrac</span> <span class="o">=</span> <span class="n">SimFrac</span><span class="p">(</span><span class="n">h</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">lx</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">ly</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="n">method</span> <span class="o">=</span> <span class="s2">&quot;spectral&quot;</span><span class="p">,</span>
+                <span class="n">units</span> <span class="o">=</span> <span class="s1">&#39;mm&#39;</span><span class="p">)</span>
+<span class="n">myfrac</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;H&quot;</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="n">myfrac</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;roughness&quot;</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.05</span>
+<span class="n">myfrac</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;aniso&quot;</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="n">myfrac</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;mismatch&quot;</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="n">myfrac</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;smooth&quot;</span>
+<span class="n">myfrac</span><span class="o">.</span><span class="n">create_fracture</span><span class="p">()</span>
+
+<span class="c1">## estimate effective aperture</span>
+<span class="n">myfrac</span><span class="o">.</span><span class="n">get_effective_aperture</span><span class="p">(</span><span class="s1">&#39;gmean&#39;</span><span class="p">)</span>
+<span class="n">myfrac</span><span class="o">.</span><span class="n">get_effective_aperture</span><span class="p">(</span><span class="s1">&#39;mean&#39;</span><span class="p">)</span>
+<span class="n">myfrac</span><span class="o">.</span><span class="n">get_effective_aperture</span><span class="p">(</span><span class="s1">&#39;hmean&#39;</span><span class="p">)</span>
+<span class="n">myfrac</span><span class="o">.</span><span class="n">get_effective_aperture</span><span class="p">(</span><span class="s1">&#39;numerical&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">myfrac</span><span class="o">.</span><span class="n">effective_aperture</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/surface.png" alt="Logo"/>
+            </a></p>
+<h3><a href="index.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Welcome to pySimFrac documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="generation_methods.html">Generation Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="general.html">General Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="geostats.html">GeoStatical analysis</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Effective Aperture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#estimate-effective-aperture">Estimate Effective Aperture</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="simulations.html">Integration with Flow Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gallery.html">Image Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pysimfrac_object.html">SimFrac object - all functions</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="geostats.html" title="previous chapter">GeoStatical analysis</a></li>
+      <li>Next: <a href="simulations.html" title="next chapter">Integration with Flow Simulators</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/effective_aperture.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Los Alamos National Laboratory.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/effective_aperture.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
