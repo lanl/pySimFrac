@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pysimfrac.src.analysis.geostats_variogram &mdash; pySimFrac</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=f2a433a1"></script>
+        <script src="../../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../pysimfrac.html" class="icon icon-home">
+            pySimFrac
+              <img src="../../../../_static/surface.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                1.0, LANL
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../intro.html">Welcome to pySimFrac documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../generation_methods.html">Generation Methods</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../general.html">General Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../geostats.html">GeoStatical analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../effective_aperture.html">Effective Aperture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../simulations.html">Integration with Flow Simulators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../gallery.html">Image Gallery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../pysimfrac_object.html">SimFrac object - all functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../pysimfrac.html">pySimFrac</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../pysimfrac.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pysimfrac.src.analysis.geostats_variogram</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pysimfrac.src.analysis.geostats_variogram</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">skgstat</span> <span class="k">as</span> <span class="nn">skg</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">pysimfrac.src.general.helper_functions</span> <span class="kn">import</span> <span class="n">print_error</span><span class="p">,</span> <span class="n">print_warning</span>
+
+<span class="c1">## Variogram is computed using scikit-gstat</span>
+<span class="c1">## https://scikit-gstat.readthedocs.io</span>
+<span class="c1">## Returns Variogram object</span>
+<span class="c1">##</span>
+<span class="c1">## Mirko Mälicke, Egil Möller, Helge David Schneider, &amp; Sebastian Müller. (2021, May 28).</span>
+<span class="c1">##</span>
+<span class="c1">## mmaelicke/scikit-gstat: A scipy flavoured geostatistical variogram analysis toolbox (Version v0.6.0). Zenodo. http://doi.org/10.5281/zenodo.4835779</span>
+<span class="c1">##</span>
+<span class="c1">## </span>
+<div class="viewcode-block" id="single_field_variogram">
+<a class="viewcode-back" href="../../../../geostats.html#pysimfrac.src.analysis.geostats_variogram.single_field_variogram">[docs]</a>
+<span class="k">def</span> <span class="nf">single_field_variogram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surface</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">max_lag</span><span class="p">,</span> <span class="n">num_lags</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Compute the variogram of a single field using scikit-gstat</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    --------------------</span>
+<span class="sd">        self : object</span>
+<span class="sd">            simFrac Class</span>
+<span class="sd">        surface : str</span>
+<span class="sd">            Name of desired surface acf to plot. Options are &#39;aperture&#39;, &#39;top&#39;, or &#39;bottom&#39;</span>
+<span class="sd">        num_samples : int</span>
+<span class="sd">            Number of random samples used to compute the variogram</span>
+<span class="sd">        max_lag : int</span>
+<span class="sd">            Maximum lag distance (unitless length).</span>
+<span class="sd">        num_lags : int</span>
+<span class="sd">            Number of lag bins. Default is 10</span>
+<span class="sd">        model : str</span>
+<span class="sd">            See https://scikit-gstat.readthedocs.io for model details. Default is spherical</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------------</span>
+<span class="sd">        None</span>
+
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----------------</span>
+<span class="sd">        scikit-gstat variogram object is attached to the simFrac object. </span>
+
+<span class="sd">        Requesting more than 10,000 samples can take a while.  </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">num_samples</span> <span class="o">&gt;</span> <span class="mi">10000</span><span class="p">:</span>
+        <span class="n">print_warning</span><span class="p">(</span><span class="s2">&quot;--&gt; A LOT of samples were requested. We don&#39;t recomend more than 10,000.  Just to let you know, this might take a while. Why don&#39;t you go get a coffee or maybe check your email. Okay?&quot;</span><span class="p">)</span>
+    <span class="n">index_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">)</span>
+    <span class="n">index_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ny</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">)</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">c_</span><span class="p">[</span><span class="n">index_y</span><span class="p">,</span> <span class="n">index_x</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">surface</span> <span class="o">==</span> <span class="s2">&quot;aperture&quot;</span><span class="p">:</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">(</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aperture</span><span class="p">[</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">surface</span> <span class="o">==</span> <span class="s2">&quot;top&quot;</span><span class="p">:</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="p">[</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">surface</span> <span class="o">==</span> <span class="s2">&quot;bottom&quot;</span><span class="p">:</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromiter</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">bottom</span><span class="p">[</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">print_error</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Error. Unknown surface provided - </span><span class="si">{</span><span class="n">surface</span><span class="si">}</span><span class="s2">. Acceptable surfaces are &#39;top&#39;, &#39;bottom&#39;, or &#39;aperture&#39;&#39;&quot;</span>
+        <span class="p">)</span>
+    <span class="c1">## Make the variogram using SciKit - gstat</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">variogram</span><span class="p">[</span><span class="n">surface</span><span class="p">]</span> <span class="o">=</span> <span class="n">skg</span><span class="o">.</span><span class="n">Variogram</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="p">,</span> <span class="n">maxlag</span> <span class="o">=</span> <span class="n">max_lag</span><span class="p">,</span> <span class="n">n_lags</span> <span class="o">=</span> <span class="n">num_lags</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="compute_variogram">
+<a class="viewcode-back" href="../../../../geostats.html#pysimfrac.src.analysis.geostats_variogram.compute_variogram">[docs]</a>
+<span class="k">def</span> <span class="nf">compute_variogram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surface</span> <span class="o">=</span> <span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">num_samples</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span> <span class="n">max_lag</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">num_lags</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">model</span> <span class="o">=</span> <span class="s1">&#39;spherical&#39;</span><span class="p">,):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Compute the variogram of the surface using scikit-gstat.  </span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    --------------------</span>
+<span class="sd">        self : object</span>
+<span class="sd">            simFrac Class</span>
+<span class="sd">        surface : str</span>
+<span class="sd">            Name of desired surface acf to plot. Options are &#39;aperture&#39;, &#39;top&#39;, &#39;bottom&#39;, or &#39;all&#39;. Default value is &#39;all&#39;</span>
+<span class="sd">        num_samples : int</span>
+<span class="sd">            Number of random samples used to compute the variogram</span>
+<span class="sd">        max_lag : int</span>
+<span class="sd">            Maximum lag distance (unitless length).</span>
+<span class="sd">        num_lags : int</span>
+<span class="sd">            Number of lag bins. Default is 10</span>
+<span class="sd">        model : str</span>
+<span class="sd">            See https://scikit-gstat.readthedocs.io for model details. Default is spherical</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------------</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----------------</span>
+<span class="sd">        scikit-gstat variogram object is attached to the simFrac object. </span>
+
+<span class="sd">        Reference:</span>
+<span class="sd">        Mirko Mälicke, Egil Möller, Helge David Schneider, &amp; Sebastian Müller. (2021, May 28).</span>
+
+<span class="sd">        mmaelicke/scikit-gstat: A scipy flavoured geostatistical variogram analysis toolbox (Version v0.6.0). Zenodo. http://doi.org/10.5281/zenodo.4835779</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+  <span class="c1"># default is to comput the correlation lengths for all 3 surfaces</span>
+    <span class="k">if</span> <span class="n">surface</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+        <span class="n">surfaces</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;aperture&quot;</span><span class="p">,</span> <span class="s2">&quot;top&quot;</span><span class="p">,</span> <span class="s2">&quot;bottom&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">sf</span> <span class="ow">in</span> <span class="n">surfaces</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--&gt; Computing variogram of </span><span class="si">{</span><span class="n">sf</span><span class="si">}</span><span class="s2"> field.&quot;</span><span class="p">)</span>
+            <span class="c1">#single_field_variogram(self, surface, num_samples, max_lag, num_lags, model)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">single_field_variogram</span><span class="p">(</span><span class="n">sf</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">max_lag</span><span class="p">,</span> <span class="n">num_lags</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+    <span class="c1">## if a single surface is provided, just compute the correlation for that surface</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--&gt; Computing variogram of </span><span class="si">{</span><span class="n">surface</span><span class="si">}</span><span class="s2"> field.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">single_field_variogram</span><span class="p">(</span><span class="n">surface</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">max_lag</span><span class="p">,</span> <span class="n">num_lags</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="plot_variogram">
+<a class="viewcode-back" href="../../../../geostats.html#pysimfrac.src.analysis.geostats_variogram.plot_variogram">[docs]</a>
+<span class="k">def</span> <span class="nf">plot_variogram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">surface</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">figname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show_lags</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Creates a plot of the autocorrelation function for surfaces. </span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    --------------------</span>
+<span class="sd">        self : object</span>
+<span class="sd">            simFrac Class</span>
+<span class="sd">        surface : str</span>
+<span class="sd">            Name of desired surface acf to plot. Options are &#39;aperture&#39;, &#39;top&#39;, &#39;bottom&#39;, or &#39;all&#39;. Default value is &#39;all&#39;</span>
+<span class="sd">        figname : str</span>
+<span class="sd">            Name of figure to be saved. If figname is None (default), then no figure is saved. </span>
+<span class="sd">        show_lags : bool</span>
+<span class="sd">            True / False plot variogram as a function of Lag (unitless) or Lag Distance (units of grid resolution)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------------------</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    --------------------</span>
+<span class="sd">        None</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">surface</span> <span class="o">==</span> <span class="s2">&quot;all&quot;</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Variograms of Fracture Surfaces&#39;</span><span class="p">,</span>
+                     <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+        <span class="c1"># Check for ACF for all surfaces</span>
+        <span class="n">surfaces</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;top&quot;</span><span class="p">,</span> <span class="s2">&quot;bottom&quot;</span><span class="p">,</span> <span class="s2">&quot;aperture&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">sf</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">surfaces</span><span class="p">):</span>
+            <span class="c1"># If the variogram hasn&#39;t been computed yet, exit</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">variogram</span><span class="p">[</span><span class="n">sf</span><span class="p">]:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;variogram for </span><span class="si">{</span><span class="n">sf</span><span class="si">}</span><span class="s2"> field was not computed yet. Doing that now.&quot;</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">compute_variogram</span><span class="p">(</span><span class="n">sf</span><span class="p">)</span>
+            <span class="c1">## Make subplot for current surface</span>
+            <span class="c1"># self.variogram[sf].plot(axes = ax[i], grid = False)</span>
+            <span class="c1"># get the parameters</span>
+            <span class="n">_bins</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variogram</span><span class="p">[</span><span class="n">sf</span><span class="p">]</span><span class="o">.</span><span class="n">bins</span>
+            <span class="n">_exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variogram</span><span class="p">[</span><span class="n">sf</span><span class="p">]</span><span class="o">.</span><span class="n">experimental</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">_bins</span><span class="p">),</span> <span class="mi">100</span><span class="p">)</span>
+            <span class="c1"># apply the model</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variogram</span><span class="p">[</span><span class="n">sf</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">show_lags</span><span class="p">:</span>
+                <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_bins</span><span class="p">,</span> <span class="n">_exp</span><span class="p">,</span> <span class="s1">&#39;.b&#39;</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Data&quot;</span><span class="p">)</span>
+                <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;-g&#39;</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Model&quot;</span><span class="p">)</span>
+                <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lag [-]&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_bins</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="n">_exp</span><span class="p">,</span> <span class="s1">&#39;.b&#39;</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Data&quot;</span><span class="p">)</span>
+                <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;-g&#39;</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Model&quot;</span><span class="p">)</span>
+                <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lag Distance [</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+            <span class="c1"># Set attributes</span>
+            <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sf</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Semivariogram&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span> <span class="o">=</span> <span class="mi">18</span><span class="p">,</span> <span class="n">loc</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Check for variogram for specific surface</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">variogram</span><span class="p">[</span><span class="n">surface</span><span class="p">]:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;variogram for </span><span class="si">{</span><span class="n">surface</span><span class="si">}</span><span class="s2"> field was not computed yet. Doing that now.&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">compute_variogram</span><span class="p">(</span><span class="n">surface</span><span class="p">)</span>
+
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Variogram of </span><span class="si">{</span><span class="n">surface</span><span class="si">}</span><span class="s1"> field&#39;</span><span class="p">,</span>
+                     <span class="n">fontsize</span><span class="o">=</span><span class="mi">24</span><span class="p">)</span>
+        <span class="c1"># get the parameters</span>
+        <span class="n">_bins</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variogram</span><span class="p">[</span><span class="n">surface</span><span class="p">]</span><span class="o">.</span><span class="n">bins</span>
+        <span class="n">_exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variogram</span><span class="p">[</span><span class="n">surface</span><span class="p">]</span><span class="o">.</span><span class="n">experimental</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">_bins</span><span class="p">),</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="c1"># apply the model</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variogram</span><span class="p">[</span><span class="n">surface</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">show_lags</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_bins</span><span class="p">,</span> <span class="n">_exp</span><span class="p">,</span> <span class="s1">&#39;.b&#39;</span><span class="p">,</span> <span class="n">markersize</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Data&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;-g&#39;</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Model&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lag [-]&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_bins</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="n">_exp</span><span class="p">,</span> <span class="s1">&#39;.b&#39;</span><span class="p">,</span> <span class="n">markersize</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>  <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Data&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;-g&#39;</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Model&quot;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Lag Distance [</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+        
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Semivariogram&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+        <span class="c1"># ax.set_xlabel(f&quot;Lag Distance [{self.units}]&quot;, fontsize=18)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span> <span class="o">=</span> <span class="mi">18</span><span class="p">,</span> <span class="n">loc</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">fontsize</span> <span class="o">=</span> <span class="mi">14</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">fontsize</span> <span class="o">=</span> <span class="mi">14</span><span class="p">)</span>
+
+    <span class="c1"># Save figure if the user wants it</span>
+    <span class="k">if</span> <span class="n">figname</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--&gt; Saving figure to file </span><span class="si">{</span><span class="n">figname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">figname</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span></div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Los Alamos National Laboratory.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
