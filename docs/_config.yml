@@ -8,3 +8,6 @@ gist:
 kramdown:
   math_engine: mathjax
   syntax_highlighter: rouge
+# Build settings
+remote_theme: jekyll/minima
+
