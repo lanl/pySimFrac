@@ -12,10 +12,10 @@ Python module for synthetic generation of rough fracture surfaces
     $ python -m pip install -e . 
 
 # Documentation 
-Pysimfrac documentation can be found here 
+Pysimfrac documentation can be found [here](https://www.genome.gov/)
 
     https://lanl.github.io/pySimFrac/
-    
+
 Or in the pysimfrac.pdf document in the main directory 
 
 # Open-Source License
