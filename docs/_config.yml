@@ -1,13 +1,30 @@
-lsi: false
-safe: true
-source: ["_images", "_modules", "_sources", "_static"]
-incremental: false
+exclude: [".rvmrc", ".rbenv-version", "ReadMe.md", "Rakefile", "changelog.md", "License.md"]
 highlighter: rouge
-gist:
-  noscript: false
-kramdown:
-  math_engine: mathjax
-  syntax_highlighter: rouge
-# Build settings
-remote_theme: jekyll/minima
 
+title : pySimFrac
+description: pySimFrac is a library providing mesh generation and optimization for a variety of polyhedra and dimensions.
+
+layouturl: https://daniellivingston.github.io/LaGriT/
+
+author :
+  name : Jeffrey Hyman Miller
+  email : jhyman@lanl.gov
+  github : lanl
+
+theme: jekyll-theme-slate
+
+production_url : https://lanl.github.io/pySimFrac
+base_url : https://lanl.github.io/LaGriT
+
+kramdown:
+   input: GFM
+   hard_wrap: false
+
+gems: [jekyll-sitemap]
+
+plugins:
+  - jekyll-sitemap
+
+tipue_search:
+      include:
+              pages: true
