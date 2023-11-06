@@ -38,28 +38,50 @@ def pad(self, target_size):
         'constant')
 
 
-def voxelize(self, solid_voxels=5):
-    """
-    
+def voxelize(self, solid_voxels=None, target_size=None):
+    """Voxelize the Fracture with Specified Parameters
 
     Parameters
-    ----------
-    solid_voxels : TYPE, optional
-        DESCRIPTION. The default is 5.
+    -------------
+        solid_voxels : int, optional
+            Number of solid voxels to add to the z-dimension to ensure the fracture is properly aligned.
+        target_size : int, optional
+            Target size for the voxelized 3D array. If set, it will define the z-dimension size.
 
-    Returns
-    -------
-    None.
+    Raises
+    ------------
+        ValueError
+            If both solid_voxels and target_size are provided, or if the calculated z-size is too big.
 
+    Notes
+    ---------
+        This function voxelizes the fracture based on either a specified number of solid voxels or a target size. It ensures:
+        1. There are no negative apertures by invoking `aperture_check`.
+        2. All negative bottom values are reset to 0 using `reset_bottom`.
+        3. The z-dimension is calculated based on the maximum topography and either solid voxels or the target size.
+        4. A warning is printed if the z-dimension is greater than 512, and a ValueError is raised if it exceeds 2058.
+        5. The fracture is voxelized by iterating through the aperture range, selecting void voxels, and reshaping the array to 3D.
+
+        The resulting voxelized 3D array is stored in the 'frac_3D' attribute of the object, with the first z-layer set to solid.
     """
 
     import numpy.lib.index_tricks as ndi
 
     self.aperture_check()  # check that there are no negative apertures
     self.reset_bottom()  # push the negative values to 0
+    
+    if solid_voxels is not None and target_size is not None:
+        raise ValueError("Please specify either solid_voxels or target_size, not both.")
 
-    # add solid voxels so the fracture is lined
-    z_size = np.ceil(self.top.max() + solid_voxels)
+    if solid_voxels:
+        # add solid voxels so the fracture is lined
+        z_size = np.ceil(self.top.max() + solid_voxels)
+        
+    if target_size:
+        solid_voxels = target_size - np.ceil(self.top.max())
+        z_size = np.ceil(self.top.max() + solid_voxels)  # add solid voxels so the fracture is lined
+        assert z_size == target_size
+        
 
     if z_size > 512:
         print_warning('The size of the array might be too big')

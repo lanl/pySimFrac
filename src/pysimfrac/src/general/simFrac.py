@@ -7,7 +7,7 @@ __email__ = "jhyman@lanl.gov"
 """
 SimFrac object class. 
 """
-import os, sys
+
 import numpy as np
 from pysimfrac.src.general.helper_functions import print_error
 
@@ -79,6 +79,8 @@ class SimFrac():
     from pysimfrac.src.analysis.effective_aperture.effective_aperture import get_effective_aperture, gmean_effective_aperture, hmean_effective_aperture, mean_effective_aperture
 
     from pysimfrac.src.analysis.effective_aperture.numerical_effective_aperture import numerical_effective_aperture
+    
+    from pysimfrac.src.methods.to_2D import generate_2D
 
     def __init__(self,
                  lx=None,
