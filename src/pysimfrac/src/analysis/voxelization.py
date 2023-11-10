@@ -86,7 +86,7 @@ def voxelize(self, solid_voxels=5):
         """
 
         ind_layer = ind_bottom + i
-        ind_layer[ind_layer > ind_top] = 0
+        ind_layer[ind_layer >= ind_top] = 0
 
         ind_1D = np.array([
             inds.T[ind_layer[I]][(I[1], I[0])]
