@@ -7,7 +7,7 @@ __email__ = "jhyman@lanl.gov"
 """
 SimFrac object class. 
 """
-
+import os, sys
 import numpy as np
 from pysimfrac.src.general.helper_functions import print_error
 
