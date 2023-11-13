@@ -2,7 +2,7 @@ import numpy as np
 
 
 
-def generate_2D(self, ind=None, mean_aperture=28):
+def generate_2D(self, ind=None):
     
     """Generate a 2D representation of the fracture.
 
@@ -10,8 +10,6 @@ def generate_2D(self, ind=None, mean_aperture=28):
     -------------
         ind : int, optional
             Index along the x-axis to select the slice for 2D representation. If not specified, defaults to the middle of the array.
-        mean_aperture : float, optional
-            Target mean aperture value to set for the 2D fracture representation. Default is 28.
 
     Notes
     ---------
@@ -27,7 +25,6 @@ def generate_2D(self, ind=None, mean_aperture=28):
     
     self.top = np.tile( self.top[ind], (self.top.shape[1], 1))
     self.bottom = np.tile( self.bottom[ind], (self.top.shape[1], 1))
-    self.set_mean_aperture(mean_aperture) 
 
 
 
