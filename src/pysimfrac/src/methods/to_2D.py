@@ -25,6 +25,7 @@ def generate_2D(self, ind=None):
     
     self.top = np.tile( self.top[ind], (self.top.shape[1], 1))
     self.bottom = np.tile( self.bottom[ind], (self.top.shape[1], 1))
+    self.set_mean_aperture() 
 
 
 
