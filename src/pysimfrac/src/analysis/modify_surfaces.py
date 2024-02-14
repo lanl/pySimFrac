@@ -136,7 +136,7 @@ def project_to_aperture(self):
     print("--> Complete")
 
 
-def apply_shear(self, shear=None):
+def apply_shear(self, shear=None, direction='x'):
     """ Shifts the top surface along the x direction a distance of shear. Units of shear are in self.units. 
 
     Parameters
@@ -145,6 +145,8 @@ def apply_shear(self, shear=None):
             simFrac Class
         shear : float
             Value of shear in the x direction (Units are self.units)
+        direction: TYPE
+            Direction to apply sheer either 'x' or 'y'.  Default is x.
 
     Returns
     --------------------
@@ -164,7 +166,16 @@ def apply_shear(self, shear=None):
     # tranlate the shear into discrete units
     n = np.ceil(self.shear / self.h).astype(int)
     ## translation of indices
-    idx = [(i + n) % self.nx for i in range(self.nx)]
-    self.top = self.top[:, idx]
-    self.project_to_aperture()
-    print("--> Applying shear to fracture : Complete")
+    if direction == 'y':
+        idy = [(i + n) % self.ny for i in range(self.ny)]
+        self.top = self.top[idy, :]
+        self.project_to_aperture()
+        print("--> Applying shear to y direction of fracture : Complete")
+    elif direction == 'x'
+        idx = [(i + n) % self.nx for i in range(self.nx)]
+        self.top = self.top[:, idx]
+        self.project_to_aperture()
+        print("--> Applying shear to x direction of fracture : Complete")
+    else:
+        print_error("Direction for shear incorrectly specified.  Direction can be specified as x or y")
+
