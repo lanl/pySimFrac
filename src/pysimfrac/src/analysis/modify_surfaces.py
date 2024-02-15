@@ -171,7 +171,7 @@ def apply_shear(self, shear=None, direction='x'):
         self.top = self.top[idy, :]
         self.project_to_aperture()
         print("--> Applying shear to y direction of fracture : Complete")
-    elif direction == 'x'
+    elif direction == 'x':
         idx = [(i + n) % self.nx for i in range(self.nx)]
         self.top = self.top[:, idx]
         self.project_to_aperture()
