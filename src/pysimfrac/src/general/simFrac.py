@@ -75,6 +75,8 @@ class SimFrac():
     from pysimfrac.src.io.dump_ascii import dump_surface_ascii, dump_ascii
 
     from pysimfrac.src.io.dump_pickle import to_pickle, from_pickle
+    from pysimfrac.src.io.dump_stl import dump_stl, write_lagrit_script_part1
+
 
     from pysimfrac.src.analysis.effective_aperture.effective_aperture import get_effective_aperture, gmean_effective_aperture, hmean_effective_aperture, mean_effective_aperture
 

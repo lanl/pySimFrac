@@ -1,6 +1,6 @@
 import numpy as np
 
-def dump_surface_ascii(self, field, filename, coordinates, indices):
+def dump_surface_ascii(self, field, filename, coordinates = True, indices = False):
     """  Writes a single field to ascii file. 
 
     Parameters
@@ -9,7 +9,7 @@ def dump_surface_ascii(self, field, filename, coordinates, indices):
             simFrac Class
         field : 2D Numpy array
             Array of surface values
-        filename_prefix : str
+        filename : str
             Prefix for filename
         coordinates : bool
             True / False to write x/y coordinates to file
