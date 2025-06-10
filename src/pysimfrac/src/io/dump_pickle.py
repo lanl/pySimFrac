@@ -1,4 +1,5 @@
 import pickle 
+import os 
 
 def to_pickle(self, pickle_filename):
     """ Saves the DFN object into a pickle format
