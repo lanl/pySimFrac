@@ -3,10 +3,25 @@ import subprocess
 import shutil 
 import os
 import glob 
-# from stl import mesh
 
+def write_lagrit_script_convert_top_and_bottom_to_avs(self):
+    """
+    Generate a LaGriT input script to create top and bottom surfaces,
+    and convert them to STL files.
 
-def write_lagrit_script_part1(self):
+    The script creates multiple computational meshes:
+    - `mo_bottom`, `mo_top`, and `mo_quad` surface meshes
+    - `mo_tri` for tetrahedral conversion
+    - Dumps include `top.stl`, `bottom.stl`, and intermediate `.inp` files
+
+    The generated script is saved as `convert_fracture_to_avs.lgi`.
+
+    Assumes the instance has attributes:
+        - `self.nx` (int): Number of grid cells in X
+        - `self.ny` (int): Number of grid cells in Y
+        - `self.lx` (float): Length in X direction
+        - `self.ly` (float): Length in Y direction
+    """
 
     lagrit_script = f"""
 
@@ -16,26 +31,20 @@ define / NY / {self.ny}
 define / X1 / {self.lx:0.2f} 
 define / Y1 / {self.ly:0.2f}  
 
-cmo/create/ mo_bottom / / / quad
-quadxy/ NX, NY / 0. 0. -1 / X1 0. -1 / X1 Y1 -1 / 0. Y1 -1
-createpts/brick/xyz/NX,NY,1/1 0 0 / connect
+# cmo/create/ mo_bottom / / / quad
+# quadxy/ NX, NY / 0. 0. -1 / X1 0. -1 / X1 Y1 -1 / 0. Y1 -1
+# createpts/brick/xyz/NX,NY,1/1 0 0 / connect
 
-// dump / bottom.inp / mo_bottom
+# cmo/create/ mo_top / / / quad
+# quadxy/ NX, NY / 0. 0. 1 / X1 0. 1 / X1 Y1 1 / 0. Y1 1
+# createpts/brick/xyz/NX,NY,1/1 0 0 / connect
 
-cmo/create/ mo_top / / / quad
-quadxy/ NX, NY / 0. 0. 1 / X1 0. 1 / X1 Y1 1 / 0. Y1 1
-createpts/brick/xyz/NX,NY,1/1 0 0 / connect
-
-// dump / top.inp / mo_top
-
-cmo / delete / mo_top
-cmo / delete / mo_bottom
+# cmo / delete / mo_top
+# cmo / delete / mo_bottom
 
 cmo/create/ mo_quad / / / quad
 quadxy/ NX, NY / 0. 0. 0. / X1 0. 0. / X1 Y1 0. / 0. Y1 0.
 createpts/brick/xyz/NX,NY,1/1 0 0 / connect
-
-// dump / quad.inp / mo_quad
 
 resetpts / itp
 cmo / status / brief
@@ -45,24 +54,16 @@ cmo / readatt / mo_quad / height / 1,0,0 / top.dat
 
 resetpts / itp
 cmo / status / brief
-
 hextotet / 2 / mo_tri  / mo_quad
-
 cmo / status / brief
-
-// dump / tri_with_top.inp / mo_tri
-
 cmo / copyatt / mo_tri / mo_tri / zic  / height 
-
 dump / surf_top.inp / mo_tri
-
 cmo / status / brief
- 
 cmo / delete / mo_quad
-
 cmo / select / mo_tri 
-
 dump / stl / top.stl
+
+
 // cmo / delete / mo_tri
 ## load Bottom
 
@@ -100,6 +101,18 @@ finish
 
 
 def write_lagrit_script_interior_stl():
+    """
+    Generate a LaGriT input script for stacking and extracting STL surfaces
+    from filled geometry between top and bottom surfaces.
+
+    Operations include:
+    - Stack creation and hex mesh filling
+    - Extraction of surface meshes by `itetclr` labels
+    - Export of STL files: `inlet.stl`, `outlet.stl`, `left.stl`, `right.stl`
+
+    Saves the script content into a hardcoded output file, if added later.
+    """
+
     lagrit_script = """
 cmo create cmo_stack
 
@@ -207,6 +220,41 @@ finish
 
 
 def write_lagrit_script_extract_exterior(self):
+    """
+    Generate a LaGriT script to extract and export STL surfaces for the
+    top, bottom, and full external geometry of a 3D stacked mesh block.
+
+    This function computes adjusted top and bottom surface elevations based on
+    the `top` and `bottom` height arrays, then constructs the following:
+
+    - STL files and AVS `.inp` mesh files for:
+        - The bottom external surface
+        - The top external surface
+        - The full external mesh block
+    - Volume stacking using `stack / fill` and `extract / surfmesh`
+    - Mesh processing steps like `hextotet`, `geniee`, and clean-up of CMO objects
+
+    The generated LaGriT script is saved as `make_exterior_blocks.lgi`.
+
+    Assumes the following instance attributes are defined:
+        self.nx (int): Number of grid points in the X direction.
+        self.ny (int): Number of grid points in the Y direction.
+        self.lx (float): Physical length of the domain in the X direction.
+        self.ly (float): Physical length of the domain in the Y direction.
+        self.top (np.ndarray): 2D or 1D array representing top surface elevation.
+        self.bottom (np.ndarray): 2D or 1D array representing bottom surface elevation.
+
+    Output Files:
+        - bottom_external.stl, top_external.stl, whole_block.stl
+        - bottom_external.inp, top_external.inp, whole_block_external.inp
+        - blocks_empty.inp
+
+    Raises:
+        ValueError: If the shape of `top` or `bottom` does not match (nx * ny).
+
+    Side Effects:
+        Writes a LaGriT script file `make_exterior_blocks.lgi` to the current directory.
+    """
 
     top = np.reshape(self.top, self.nx*self.ny)   
     bottom = np.reshape(self.bottom, self.nx*self.ny)   
@@ -335,422 +383,6 @@ finish
         fp.write(lagrit_script)
         fp.flush() 
 
-
-# def write_lagrit_script_convert_exterior_to_stl(top_surface_height, bottom_surface_height):
-
-#     lagrit_script = """
-
-# read / top.inp / mo_top
-# hextotet / 2 / mo_tri  / mo_top
-# cmo / select / mo_tri 
-# dump / stl / top_opposite.stl / mo_tri 
-# cmo / delete / mo_tri
-# cmo / delete / mo_top 
-
-# read / surf_top.inp / mo_top
-# hextotet / 2 / mo_tri  / mo_top
-# cmo / select / mo_tri 
-# dump / stl / top_surf.stl / mo_tri 
-# cmo / delete / mo_tri
-# cmo / delete / mo_top 
-
-# read / top_external.inp / mo_surf 
-
-# cmo / select / mo_surf
-# settets/normal
-
-# cmo / select / mo_surf 
-# eltset/ e_delete/ idface1 eq 1
-# rmpoint / element / eltset get e_delete
-# rmpoint / compress
-
-# cmo / select / mo_surf 
-# eltset/ e_delete/ idface1 eq 2
-# rmpoint / element / eltset get e_delete
-# rmpoint / compress
-
-# ## Grab surfaces and dump stl files
-# # cmo / copy/ mo_inlet /mo_surf
-# # cmo / select / mo_inlet 
-# # eltset/ e_delete/ itetclr ne 1
-# # rmpoint / element / eltset get e_delete
-# # rmpoint / compress
-# # cmo / status / brief 
-# # hextotet / 2 / mo_tri  / mo_inlet
-# # cmo / select / mo_tri 
-# # // dump / bottom.inp / mo_tri
-# # dump / stl / top_opposite.stl / mo_tri 
-# # cmo / delete / mo_tri
-# # cmo / delete / mo_inlet 
-
-# cmo / copy/ mo_inlet /mo_surf
-# cmo / select / mo_inlet 
-# eltset/ e_delete/ itetclr ne 4
-# rmpoint / element / eltset get e_delete
-# rmpoint / compress
-# cmo / status / brief 
-# hextotet / 2 / mo_tri  / mo_inlet
-# cmo / select / mo_tri 
-# // dump / inlet.inp / mo_tri
-# dump / stl / top_front.stl / mo_tri 
-# cmo / delete / mo_tri
-# cmo / delete / mo_inlet 
-
-# cmo / copy/ mo_inlet /mo_surf
-# cmo / select / mo_inlet 
-# eltset/ e_delete/ itetclr ne 6
-# rmpoint / element / eltset get e_delete
-# rmpoint / compress
-# cmo / status / brief 
-# hextotet / 2 / mo_tri  / mo_inlet
-# cmo / select / mo_tri 
-# // dump / outlet.inp / mo_tri
-# dump / stl / top_back.stl / mo_tri
-# cmo / delete / mo_tri
-# cmo / delete / mo_inlet
-
-# cmo / copy/ mo_inlet /mo_surf
-# cmo / select / mo_inlet 
-# eltset/ e_delete/ itetclr ne 3
-# rmpoint / element / eltset get e_delete
-# rmpoint / compress
-# cmo / status / brief 
-# hextotet / 2 / mo_tri  / mo_inlet
-# cmo / select / mo_tri 
-# // dump / left.inp / mo_tri
-# dump / stl / top_left.stl / mo_tri
-# cmo / delete / mo_tri
-# cmo / delete / mo_inlet
-
-
-# cmo / copy/ mo_inlet /mo_surf
-# cmo / select / mo_inlet 
-# eltset/ e_delete/ itetclr ne 5
-# rmpoint / element / eltset get e_delete
-# rmpoint / compress
-# cmo / status / brief 
-# hextotet / 2 / mo_tri  / mo_inlet
-# cmo / select / mo_tri 
-# // dump / right.inp / mo_tri
-# dump / stl / top_right.stl / mo_tri
-# cmo / delete / mo_tri
-# cmo / delete / mo_inlet
-
-# finish 
-
-# """
-#     with open('top_exterior_to_stl.lgi', 'w') as fp:
-#         fp.write(lagrit_script)
-#         fp.flush() 
-
-
-#     lagrit_script = """
-
-# read / bottom.inp / mo_bottom
-# hextotet / 2 / mo_tri  / mo_bottom
-# cmo / select / mo_tri 
-# dump / stl / bottom_opposite.stl / mo_tri 
-# cmo / delete / mo_tri
-# cmo / delete / mo_top 
-
-# read / surf_bottom.inp / mo_top
-# hextotet / 2 / mo_tri  / mo_top
-# cmo / select / mo_tri 
-# dump / stl / bottom_surf.stl / mo_tri 
-# cmo / delete / mo_tri
-# cmo / delete / mo_top 
-
-# read / bottom_external.inp / mo_surf 
-
-# cmo / select / mo_surf
-# settets/normal
-
-# cmo / select / mo_surf 
-# eltset/ e_delete/ idface1 eq 1
-# rmpoint / element / eltset get e_delete
-# rmpoint / compress
-
-# cmo / select / mo_surf 
-# eltset/ e_delete/ idface1 eq 2
-# rmpoint / element / eltset get e_delete
-# rmpoint / compress
-
-# ## Grab surfaces and dump stl files
-# # cmo / copy/ mo_inlet /mo_surf
-# # cmo / select / mo_inlet 
-# # eltset/ e_delete/ itetclr ne 1
-# # rmpoint / element / eltset get e_delete
-# # rmpoint / compress
-# # cmo / status / brief 
-# # hextotet / 2 / mo_tri  / mo_inlet
-# # cmo / select / mo_tri 
-# # // dump / bottom.inp / mo_tri
-# # dump / stl / bottom.stl / mo_tri 
-# # cmo / delete / mo_tri
-# # cmo / delete / mo_inlet 
-
-# cmo / copy/ mo_inlet /mo_surf
-# cmo / select / mo_inlet 
-# eltset/ e_delete/ itetclr ne 4
-# rmpoint / element / eltset get e_delete
-# rmpoint / compress
-# cmo / status / brief 
-# hextotet / 2 / mo_tri  / mo_inlet
-# cmo / select / mo_tri 
-# // dump / inlet.inp / mo_tri
-# dump / stl / bottom_front.stl / mo_tri 
-# cmo / delete / mo_tri
-# cmo / delete / mo_inlet 
-
-# cmo / copy/ mo_inlet /mo_surf
-# cmo / select / mo_inlet 
-# eltset/ e_delete/ itetclr ne 6
-# rmpoint / element / eltset get e_delete
-# rmpoint / compress
-# cmo / status / brief 
-# hextotet / 2 / mo_tri  / mo_inlet
-# cmo / select / mo_tri 
-# // dump / outlet.inp / mo_tri
-# dump / stl / bottom_back.stl / mo_tri
-# cmo / delete / mo_tri
-# cmo / delete / mo_inlet
-
-# cmo / copy/ mo_inlet /mo_surf
-# cmo / select / mo_inlet 
-# eltset/ e_delete/ itetclr ne 3
-# rmpoint / element / eltset get e_delete
-# rmpoint / compress
-# cmo / status / brief 
-# hextotet / 2 / mo_tri  / mo_inlet
-# cmo / select / mo_tri 
-# // dump / left.inp / mo_tri
-# dump / stl / bottom_left.stl / mo_tri
-# cmo / delete / mo_tri
-# cmo / delete / mo_inlet
-
-
-# cmo / copy/ mo_inlet /mo_surf
-# cmo / select / mo_inlet 
-# eltset/ e_delete/ itetclr ne 5
-# rmpoint / element / eltset get e_delete
-# rmpoint / compress
-# cmo / status / brief 
-# hextotet / 2 / mo_tri  / mo_inlet
-# cmo / select / mo_tri 
-# // dump / right.inp / mo_tri
-# dump / stl / bottom_right.stl / mo_tri
-# cmo / delete / mo_tri
-# cmo / delete / mo_inlet
-
-# finish 
-
-# """
-#     with open('bottom_exterior_to_stl.lgi', 'w') as fp:
-#         fp.write(lagrit_script)
-#         fp.flush() 
-
-#     #whole block    
-#     lagrit_script = """
-# read / bottom.inp / mo_bottom
-# hextotet / 2 / mo_tri  / mo_bottom
-# cmo / select / mo_tri 
-# dump / stl / whole_block_bottom.stl / mo_tri 
-# cmo / delete / mo_tri
-# cmo / delete / mo_bottom 
-
-# read / top.inp / mo_top
-# hextotet / 2 / mo_tri  / mo_top
-# cmo / select / mo_tri 
-# dump / stl / whole_block_top.stl / mo_tri 
-# cmo / delete / mo_tri
-# cmo / delete / mo_top 
-
-# read / whole_block_external.inp / mo_surf 
-
-# cmo / select / mo_surf
-# settets/normal
-# ## remove surfaces for normal vector based dump
-# cmo / select / mo_surf 
-# eltset/ e_delete/ idface1 eq 1
-# rmpoint / element / eltset get e_delete
-# rmpoint / compress
-
-# cmo / select / mo_surf 
-# eltset/ e_delete/ idface1 eq 2
-# rmpoint / element / eltset get e_delete
-# rmpoint / compress
-
-# ## Grab surfaces and dump stl files
-
-# cmo / copy/ mo_inlet /mo_surf
-# cmo / select / mo_inlet 
-# eltset/ e_delete/ itetclr ne 4
-# rmpoint / element / eltset get e_delete
-# rmpoint / compress
-# cmo / status / brief 
-# hextotet / 2 / mo_tri  / mo_inlet
-# cmo / select / mo_tri 
-# // dump / inlet.inp / mo_tri
-# dump / stl / whole_block_front.stl / mo_tri 
-# cmo / delete / mo_tri
-# cmo / delete / mo_inlet 
-
-# cmo / copy/ mo_inlet /mo_surf
-# cmo / select / mo_inlet 
-# eltset/ e_delete/ itetclr ne 6
-# rmpoint / element / eltset get e_delete
-# rmpoint / compress
-# cmo / status / brief 
-# hextotet / 2 / mo_tri  / mo_inlet
-# cmo / select / mo_tri 
-# // dump / outlet.inp / mo_tri
-# dump / stl / whole_block_back.stl / mo_tri
-# cmo / delete / mo_tri
-# cmo / delete / mo_inlet
-
-# cmo / copy/ mo_inlet /mo_surf
-# cmo / select / mo_inlet 
-# eltset/ e_delete/ itetclr ne 3
-# rmpoint / element / eltset get e_delete
-# rmpoint / compress
-# cmo / status / brief 
-# hextotet / 2 / mo_tri  / mo_inlet
-# cmo / select / mo_tri 
-# // dump / left.inp / mo_tri
-# dump / stl / whole_block_left.stl / mo_tri
-# cmo / delete / mo_tri
-# cmo / delete / mo_inlet
-
-# cmo / copy/ mo_inlet /mo_surf
-# cmo / select / mo_inlet 
-# eltset/ e_delete/ itetclr ne 5
-# rmpoint / element / eltset get e_delete
-# rmpoint / compress
-# cmo / status / brief 
-# hextotet / 2 / mo_tri  / mo_inlet
-# cmo / select / mo_tri 
-# // dump / right.inp / mo_tri
-# dump / stl / whole_block_right.stl / mo_tri
-# cmo / delete / mo_tri
-# cmo / delete / mo_inlet
-
-# finish 
-
-# """
-#     with open('whole_block_exterior_to_stl.lgi', 'w') as fp:
-#         fp.write(lagrit_script)
-#         fp.flush() 
-
-#     lagrit_script = f"""
-
-
-# read / whole_block_external.inp / mo_surf 
-
-# cmo / select / mo_surf
-# settets/normal
-
-# ## remove surfaces for normal vector based dump
-# cmo / select / mo_surf 
-# eltset/ e_delete/ idface1 ne 1
-# rmpoint / element / eltset get e_delete
-# rmpoint / compress
-
-# pset / p_delete / attribute / zic / 1,0,0 / lt {bottom_surface_height*0.95:0.2f}
-# rmpoint  / pset get p_delete
-# rmpoint / compress
-
-# dump / tmp.inp / mo_surf 
-
-# cmo / status / brief 
-# hextotet / 2 / mo_tri  / mo_surf
-# cmo / select / mo_tri 
-# dump / stl / whole_block_bottom_surface.stl / mo_tri
-# cmo / delete / mo_tri
-# cmo / delete / mo_surf
-
-# cmo / status / brief 
-
-
-
-# read / whole_block_external.inp / mo_surf 
-
-# cmo / select / mo_surf
-# settets/normal
-
-# ## remove surfaces for normal vector based dump
-# cmo / select / mo_surf 
-# eltset/ e_delete/ idface1 ne 2
-# rmpoint / element / eltset get e_delete
-# rmpoint / compress
-
-# pset / p_delete / attribute / zic / 1,0,0 / gt {top_surface_height*0.95:0.2f}
-# rmpoint  / pset get p_delete
-# rmpoint / compress
-
-# dump / tmp.inp / mo_surf 
-
-# cmo / status / brief 
-# hextotet / 2 / mo_tri  / mo_surf
-# cmo / select / mo_tri 
-# dump / stl / whole_block_top_surface.stl / mo_tri
-# cmo / delete / mo_tri
-# cmo / delete / mo_surf
-
-# cmo / status / brief 
-
-
-# finish 
-
-# """
-#     with open('whole_block_surface_to_stl.lgi', 'w') as fp:
-#         fp.write(lagrit_script)
-#         fp.flush() 
-
-
-
-# def combine_stl():
-
-#     # # Load STL files
-#     # blocks = ['top','bottom']
-#     # for block in blocks:
-#     #     mesh_right = mesh.Mesh.from_file(f'{block}_right.stl')
-#     #     mesh_left = mesh.Mesh.from_file(f'{block}_left.stl')
-#     #     mesh_front = mesh.Mesh.from_file(f'{block}_front.stl')
-#     #     mesh_back = mesh.Mesh.from_file(f'{block}_back.stl')
-#     #     mesh_opposite = mesh.Mesh.from_file(f'{block}_opposite.stl')
-#     #     mesh_surf = mesh.Mesh.from_file(f'{block}_surf.stl')
-
-#     #     # Combine data
-#     #     combined_data = np.concatenate([mesh_right.data, mesh_left.data, \
-#     #                                     mesh_front.data, mesh_back.data, \
-#     #                                     mesh_opposite.data, mesh_surf.data ])
-
-#     #     # Create new mesh
-#     #     combined_mesh = mesh.Mesh(combined_data)
-#     #     combined_mesh.save(f'{block}_block.stl')
-
-#     blocks = ['whole_block']
-#     for block in blocks:
-#         mesh_right = mesh.Mesh.from_file(f'{block}_right.stl')
-#         mesh_left = mesh.Mesh.from_file(f'{block}_left.stl')
-#         mesh_front = mesh.Mesh.from_file(f'{block}_front.stl')
-#         mesh_back = mesh.Mesh.from_file(f'{block}_back.stl')
-#         mesh_top = mesh.Mesh.from_file(f'{block}_top.stl')
-#         mesh_bottom = mesh.Mesh.from_file(f'{block}_bottom.stl')
-#         mesh_top_surf = mesh.Mesh.from_file(f'{block}_top_surface.stl')
-#         mesh_bottom_surf= mesh.Mesh.from_file(f'{block}_bottom_surface.stl')
-
-#         # Combine data
-#         combined_data = np.concatenate([mesh_right.data, mesh_left.data, \
-#                                         mesh_front.data, mesh_back.data, \
-#                                         mesh_top.data, mesh_bottom.data, \
-#                                          mesh_top_surf.data, mesh_bottom_surf.data ])
-
-#         # Create new mesh
-#         combined_mesh = mesh.Mesh(combined_data)
-#         combined_mesh.save(f'{block}.stl')
-
-
 def cleanup():
     """
     Clean up the current working directory by organizing and removing specific files.
@@ -807,7 +439,69 @@ def cleanup():
             except Exception as e:
                 print(f"Error deleting file '{file}': {e}")
 
-def dump_stl(self, interior = True, exterior = False, cleanup_run = True):
+
+
+def _run_lagrit(self, script_file):
+    """
+    Run a LaGriT script with error checking.
+
+    Args:
+        script_file (str): Path to the LaGriT input script.
+
+    Raises:
+        FileNotFoundError: If the script file does not exist.
+        RuntimeError: If LaGriT execution fails.
+    """
+    if not os.path.exists(script_file):
+        raise FileNotFoundError(f"LaGriT script '{script_file}' not found.")
+    try:
+        subprocess.run(f"lagrit < {script_file}", shell=True, check=True)
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"LaGriT execution failed on script: {script_file}") from e
+
+def dump_stl(self, interior=True, exterior=False, cleanup_run=True):
+    """
+    Generate STL surface files representing a fracture mesh using LaGriT and optionally extract
+    interior and/or exterior geometry.
+
+    This method performs the following steps:
+    1. Flattens and saves `top` and `bottom` surface data to `top.dat` and `bottom.dat`.
+    2. Executes LaGriT scripts to convert those surfaces to STL format.
+    3. Optionally extracts and exports:
+       - Interior surfaces between the top and bottom using `convert_interior_to_stl.lgi`.
+       - Exterior mesh geometry and block structure using `make_exterior_blocks.lgi`.
+    4. Optionally cleans up intermediate files from the current directory.
+
+    Args:
+        interior (bool, optional): 
+            If True, generates internal surface STL files 
+            (e.g., `inlet.stl`, `outlet.stl`, etc.). Defaults to True.
+
+        exterior (bool, optional): 
+            If True, generates exterior STL representations of the block, 
+            including top, bottom, and full volume. Defaults to False.
+
+        cleanup_run (bool, optional): 
+            If True, removes intermediate `.dat` and `.inp` files 
+            and moves `.stl` files into `stl_files/`. Defaults to True.
+
+    Raises:
+        ValueError: If the `top` or `bottom` surface arrays cannot be reshaped to `nx * ny`.
+        FileNotFoundError: If required LaGriT executable or inputs are missing.
+        RuntimeError: If a LaGriT subprocess call fails.
+
+    Side Effects:
+        - Creates `top.dat` and `bottom.dat` files from reshaped surface arrays.
+        - Generates and executes `.lgi` scripts using subprocess calls.
+        - Produces multiple `.stl` and `.inp` files in the current working directory.
+        - Optionally cleans up and organizes generated files via `cleanup()`.
+
+    Note:
+        Requires the LaGriT binary (`lagrit`) to be installed and available in the system's PATH.
+
+    Example:
+        >>> myfrac.dump_stl(interior=True, exterior=True)
+    """
 
     print("--> Dumping fracture surfaces to STL")
     top = np.reshape(self.top, self.nx*self.ny)   
@@ -815,16 +509,17 @@ def dump_stl(self, interior = True, exterior = False, cleanup_run = True):
     bottom = np.reshape(self.bottom, self.nx*self.ny)   
     np.savetxt("bottom.dat", bottom, delimiter=" ")
 
-    self.write_lagrit_script_part1()
-    subprocess.call('lagrit <  convert_fracture_to_avs.lgi', shell = True)
+    self.write_lagrit_script_convert_top_and_bottom_to_avs()
+    self._run_lagrit('convert_fracture_to_avs.lgi')
 
     if interior:
         write_lagrit_script_interior_stl()
-        subprocess.call('lagrit <  convert_interior_to_stl.lgi', shell = True)
+        self._run_lagrit('convert_interior_to_stl.lgi')
 
     if exterior:
         self.write_lagrit_script_extract_exterior()
-        subprocess.call('lagrit < make_exterior_blocks.lgi', shell = True)
+        self._run_lagrit('make_exterior_blocks.lgi')
+
     if cleanup_run:
         cleanup()
     print("--> Dumping fracture surfaces to STL Complete")
