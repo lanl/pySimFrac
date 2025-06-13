@@ -314,8 +314,9 @@ finish
     with open('make_exterior_blocks.lgi', 'w') as fp:
         fp.write(lagrit_script)
         fp.flush() 
+    return top_surface_height, bottom_surface_height
 
-def write_lagrit_script_convert_exterior_to_stl():
+def write_lagrit_script_convert_exterior_to_stl(top_surface_height, bottom_surface_height):
 
     lagrit_script = """
 
@@ -528,10 +529,8 @@ finish
         fp.write(lagrit_script)
         fp.flush() 
 
-
     #whole block    
     lagrit_script = """
-
 read / bottom.inp / mo_bottom
 hextotet / 2 / mo_tri  / mo_bottom
 cmo / select / mo_tri 
@@ -550,7 +549,7 @@ read / whole_block_external.inp / mo_surf
 
 cmo / select / mo_surf
 settets/normal
-
+## remove surfaces for normal vector based dump
 cmo / select / mo_surf 
 eltset/ e_delete/ idface1 eq 1
 rmpoint / element / eltset get e_delete
@@ -602,7 +601,6 @@ dump / stl / whole_block_left.stl / mo_tri
 cmo / delete / mo_tri
 cmo / delete / mo_inlet
 
-
 cmo / copy/ mo_inlet /mo_surf
 cmo / select / mo_inlet 
 eltset/ e_delete/ itetclr ne 5
@@ -622,6 +620,73 @@ finish
     with open('whole_block_exterior_to_stl.lgi', 'w') as fp:
         fp.write(lagrit_script)
         fp.flush() 
+
+    lagrit_script = f"""
+
+
+read / whole_block_external.inp / mo_surf 
+
+cmo / select / mo_surf
+settets/normal
+
+## remove surfaces for normal vector based dump
+cmo / select / mo_surf 
+eltset/ e_delete/ idface1 ne 1
+rmpoint / element / eltset get e_delete
+rmpoint / compress
+
+pset / p_delete / attribute / zic / 1,0,0 / lt {bottom_surface_height*0.95:0.2f}
+rmpoint  / pset get p_delete
+rmpoint / compress
+
+dump / tmp.inp / mo_surf 
+
+cmo / status / brief 
+hextotet / 2 / mo_tri  / mo_surf
+cmo / select / mo_tri 
+dump / stl / whole_block_bottom_surface.stl / mo_tri
+cmo / delete / mo_tri
+cmo / delete / mo_surf
+
+cmo / status / brief 
+
+
+
+read / whole_block_external.inp / mo_surf 
+
+cmo / select / mo_surf
+settets/normal
+
+## remove surfaces for normal vector based dump
+cmo / select / mo_surf 
+eltset/ e_delete/ idface1 ne 2
+rmpoint / element / eltset get e_delete
+rmpoint / compress
+
+pset / p_delete / attribute / zic / 1,0,0 / gt {top_surface_height*0.95:0.2f}
+rmpoint  / pset get p_delete
+rmpoint / compress
+
+dump / tmp.inp / mo_surf 
+
+cmo / status / brief 
+hextotet / 2 / mo_tri  / mo_surf
+cmo / select / mo_tri 
+dump / stl / whole_block_top_surface.stl / mo_tri
+cmo / delete / mo_tri
+cmo / delete / mo_surf
+
+cmo / status / brief 
+
+
+finish 
+
+"""
+    with open('whole_block_surface_to_stl.lgi', 'w') as fp:
+        fp.write(lagrit_script)
+        fp.flush() 
+
+
 
 def combine_stl():
 
@@ -652,15 +717,18 @@ def combine_stl():
         mesh_back = mesh.Mesh.from_file(f'{block}_back.stl')
         mesh_top = mesh.Mesh.from_file(f'{block}_top.stl')
         mesh_bottom = mesh.Mesh.from_file(f'{block}_bottom.stl')
+        mesh_top_surf = mesh.Mesh.from_file(f'{block}_top_surface.stl')
+        mesh_bottom_surf= mesh.Mesh.from_file(f'{block}_bottom_surface.stl')
 
         # Combine data
         combined_data = np.concatenate([mesh_right.data, mesh_left.data, \
                                         mesh_front.data, mesh_back.data, \
-                                        mesh_top.data, mesh_bottom.data ])
+                                        mesh_top.data, mesh_bottom.data, \
+                                         mesh_top_surf.data, mesh_bottom_surf.data ])
 
         # Create new mesh
         combined_mesh = mesh.Mesh(combined_data)
-        combined_mesh.save(f'{block}_block.stl')
+        combined_mesh.save(f'{block}.stl')
 
 
 def cleanup():
@@ -703,13 +771,14 @@ def dump_stl(self, interior = True, exterior = False, cleanup_run = True):
         subprocess.call('lagrit <  convert_interior_to_stl.lgi', shell = True)
 
     if exterior:
-        self.write_lagrit_script_extract_exterior()
+        top_surface_height, bottom_surface_height = self.write_lagrit_script_extract_exterior()
         subprocess.call('lagrit < make_exterior_blocks.lgi', shell = True)
 
-        write_lagrit_script_convert_exterior_to_stl() 
-        #subprocess.call('lagrit < top_exterior_to_stl.lgi', shell = True)
-        #subprocess.call('lagrit < bottom_exterior_to_stl.lgi', shell = True)
+        write_lagrit_script_convert_exterior_to_stl(top_surface_height, bottom_surface_height) 
+        subprocess.call('lagrit < top_exterior_to_stl.lgi', shell = True)
+        subprocess.call('lagrit < bottom_exterior_to_stl.lgi', shell = True)
         subprocess.call('lagrit < whole_block_exterior_to_stl.lgi', shell = True)
+        subprocess.call('lagrit < whole_block_surface_to_stl.lgi', shell = True)
 
         combine_stl() 
 
