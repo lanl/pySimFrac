@@ -6,7 +6,7 @@ name = "pySimFrac"
 
 date = now.strftime("%Y-%m-%d %H:%M")
 
-version = "1.0"
+version = "1.1"
 
 description = "Fracture surface generation and analysis"
 

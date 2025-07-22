@@ -2,120 +2,213 @@ import numpy as np
 from pysimfrac.src.general.helper_functions import print_error
 
 
-def build_matrix(nrows, ncolumns, h, k, direction='x'):
-    """ Builds linear system for pressure with dirichlet conditions along the x-direction
+from scipy.sparse import lil_matrix, csr_matrix
+from scipy.sparse.linalg import spsolve
 
-    Parameters
-    ----------------
-        nrows : int
 
-        ncolumns : int
+# def build_matrix(nrows, ncolumns, h, k, direction='x'):
+#     """ Builds linear system for pressure with dirichlet conditions along the x-direction
 
-        h : float
+#     Parameters
+#     ----------------
+#         nrows : int
 
-        k : 2D - numpy array
-            Permeability field, size nrows x ncolumns
+#         ncolumns : int
 
-        direction : string
-            x/y primary direction of flow
+#         h : float
 
-    Returns 
-    ----------------
-        A : 2D - numpy array
-            Linear system size of nrows*ncolumns, nrows*ncolumns 
-        b : 1D - numpy array
-            RHS of Ax = b
+#         k : 2D - numpy array
+#             Permeability field, size nrows x ncolumns
 
-    Notes
-    -------------------
-        Uses reflective BTC for laterial boundaries
+#         direction : string
+#             x/y primary direction of flow
+
+#     Returns 
+#     ----------------
+#         A : 2D - numpy array
+#             Linear system size of nrows*ncolumns, nrows*ncolumns 
+#         b : 1D - numpy array
+#             RHS of Ax = b
+
+#     Notes
+#     -------------------
+#         Uses reflective BTC for laterial boundaries
     
     
+#     """
+
+#     N = nrows * ncolumns
+#     A = lil_matrix((N, N))
+#     b = np.zeros(N)
+#     ih2 = 1/h**2
+#     for i in range(N):
+#         iy = int(
+#             i % nrows
+#         )  #;    // % is the "modulo operator", the remainder of i / width;
+#         ix = int(i / nrows)  #;    // where "/" is an integer division
+
+#         ## Check flow direction to build matrix.
+#         if direction == 'x':
+#             # print(f'row {iy} / col {ix}')
+#             if ix > 0 and ix < ncolumns - 1 and iy > 0 and iy < nrows - 1:
+#                 A[i, i] = -4 * k[iy, ix] * ih2
+#                 A[i, i - nrows] = k[iy, ix - 1] * ih2
+#                 A[i, i + nrows] = k[iy, ix + 1]* ih2
+#                 A[i, i - 1] = k[iy - 1, ix]* ih2
+#                 A[i, i + 1] = k[iy + 1, ix]* ih2
+
+#             ##
+#             elif ix == 0:
+#                 # print(f'row {iy} / col {ix} - left boundary')
+#                 A[i,:] = 0
+#                 A[i, i] = 1
+#                 b[i] = 2e6
+
+#             elif ix == ncolumns - 1:
+#                 # print(f'row {iy} / col {ix} - right boundary')
+#                 A[i,:] = 0
+#                 A[i, i] = 1
+#                 b[i] = 1e6
+
+#             elif iy == 0:
+#                 # print(f'row {iy} / col {ix} - bottom boundary')
+#                 A[i, i] = -4 * k[iy, ix]* ih2
+#                 A[i, i - nrows] = k[iy, ix - 1]* ih2
+#                 A[i, i + nrows] = k[iy, ix + 1]* ih2
+#                 # A[i, i - 1] = k[iy - 1, ix]
+#                 A[i, i + 1] = 2 * k[iy + 1, ix]* ih2
+
+#             elif iy == nrows - 1:
+#                 # print(f'row {iy} / col {ix} - top boundary')
+#                 A[i, i] = -4 * k[iy, ix]* ih2
+#                 A[i, i - nrows] = k[iy, ix - 1]* ih2
+#                 A[i, i + nrows] = k[iy, ix + 1]* ih2
+#                 A[i, i - 1] = 2 * k[iy - 1, ix]* ih2
+#                 # A[i, i + 1] = k[iy + 1, ix]
+#         elif direction == 'y':
+#             # print(f'row {iy} / col {ix}')
+#             if ix > 0 and ix < ncolumns - 1 and iy > 0 and iy < nrows - 1:
+#                 A[i, i] = -4 * k[iy, ix]* ih2
+#                 A[i, i - nrows] = k[iy, ix - 1]* ih2
+#                 A[i, i + nrows] = k[iy, ix + 1]* ih2
+#                 A[i, i - 1] = k[iy - 1, ix]* ih2
+#                 A[i, i + 1] = k[iy + 1, ix]* ih2
+
+#             elif iy == 0:
+#                 # print(f'row {iy} / col {ix} - bottom boundary')
+#                 A[i,:] = 0
+#                 A[i, i] = 1
+#                 b[i] = 2e6
+
+#             elif iy == nrows - 1:
+#                 # print(f'row {iy} / col {ix} - top boundary')
+#                 A[i, :] = 0
+#                 A[i, i] = 1
+#                 b[i] = 1e6
+
+#             elif ix == 0:
+#                 # print(f'row {iy} / col {ix} - left boundary')
+#                 A[i, i] = -4 * k[iy, ix]* ih2
+#                 # A[i, i - nrows] = k[iy, ix - 1]
+#                 A[i, i + nrows] = 2 * k[iy, ix + 1]* ih2
+#                 A[i, i - 1] = k[iy - 1, ix]* ih2
+#                 A[i, i + 1] = k[iy + 1, ix]* ih2
+
+#             elif ix == ncolumns - 1:
+#                 # print(f'row {iy} / col {ix} - bottom boundary')
+#                 A[i, i] = -4 * k[iy, ix]* ih2
+#                 A[i, i - nrows] = 2 * k[iy, ix - 1]* ih2
+#                 # A[i, i + nrows] = k[iy, ix + 1]
+#                 A[i, i - 1] = k[iy - 1, ix]* ih2
+#                 A[i, i + 1] = k[iy + 1, ix]* ih2
+
+#         else:
+#             print_error('--> Unknown direction for effective perm flow.')
+
+
+#     return A.tocsr(), b
+
+def build_matrix(nrows, ncols, h, k, 
+                 p_dirichlet_low = 1e6, p_dirichlet_high = 2e6, 
+                 direction='x'):
     """
-    A = np.zeros((nrows * ncolumns, nrows * ncolumns))
-    b = np.zeros(nrows * ncolumns)
-    for i in range(nrows * ncolumns):
-        iy = int(
-            i % nrows
-        )  #;    // % is the "modulo operator", the remainder of i / width;
-        ix = int(i / nrows)  #;    // where "/" is an integer division
+    C-order flatten; harmonic mean transmissibilities; true Neumann on lateral.
+    """
+    N = nrows * ncols
+    A = lil_matrix((N, N))
+    b = np.zeros(N)
+    inv_h2 = 1.0 / h**2
 
-        ## Check flow direction to build matrix.
-        if direction == 'x':
-            # print(f'row {iy} / col {ix}')
-            if ix > 0 and ix < ncolumns - 1 and iy > 0 and iy < nrows - 1:
-                A[i, i] = -4 * k[iy, ix]
-                A[i, i - nrows] = k[iy, ix - 1]
-                A[i, i + nrows] = k[iy, ix + 1]
-                A[i, i - 1] = k[iy - 1, ix]
-                A[i, i + 1] = k[iy + 1, ix]
+    def idx(r, c):
+        return r * ncols + c
 
-            ##
-            elif ix == 0:
-                # print(f'row {iy} / col {ix} - left boundary')
-                A[i, i] = 1
-                b[i] = 2
+    # face transmissibility
+    def T(r1, c1, r2, c2):
+        # harmonic mean at the interface
+        if k[r1, c1] == 0:
+            k[r1, c1] = 1e-16
+        if k[r2, c2] == 0:
+            k[r2, c2] = 1e-16
+             
 
-            elif ix == ncolumns - 1:
-                # print(f'row {iy} / col {ix} - right boundary')
-                A[i, i] = 1
-                b[i] = 1
+        km = 2 * k[r1, c1] * k[r2, c2] / (k[r1, c1] + k[r2, c2])
+        return km * inv_h2
 
-            elif iy == 0:
-                # print(f'row {iy} / col {ix} - bottom boundary')
-                A[i, i] = -4 * k[iy, ix]
-                A[i, i - nrows] = k[iy, ix - 1]
-                A[i, i + nrows] = k[iy, ix + 1]
-                # A[i, i - 1] = k[iy - 1, ix]
-                A[i, i + 1] = 2 * k[iy + 1, ix]
+    for r in range(nrows):
+        for c in range(ncols):
+            i = idx(r, c)
 
-            elif iy == nrows - 1:
-                # print(f'row {iy} / col {ix} - top boundary')
-                A[i, i] = -4 * k[iy, ix]
-                A[i, i - nrows] = k[iy, ix - 1]
-                A[i, i + nrows] = k[iy, ix + 1]
-                A[i, i - 1] = 2 * k[iy - 1, ix]
-                # A[i, i + 1] = k[iy + 1, ix]
-        elif direction == 'y':
-            # print(f'row {iy} / col {ix}')
-            if ix > 0 and ix < ncolumns - 1 and iy > 0 and iy < nrows - 1:
-                A[i, i] = -4 * k[iy, ix]
-                A[i, i - nrows] = k[iy, ix - 1]
-                A[i, i + nrows] = k[iy, ix + 1]
-                A[i, i - 1] = k[iy - 1, ix]
-                A[i, i + 1] = k[iy + 1, ix]
+            # 1) Dirichlet inflow/outflow
+            if direction == 'x' and c == 0:
+                A[i, i] = 1.0
+                b[i]    = p_dirichlet_low
+                continue
+            if direction == 'x' and c == ncols - 1:
+                A[i, i] = 1.0
+                b[i]    = p_dirichlet_high
+                continue
+            if direction == 'y' and r == 0:
+                A[i, i] = 1.0
+                b[i]    = p_dirichlet_low
+                continue
+            if direction == 'y' and r == nrows - 1:
+                A[i, i] = 1.0
+                b[i]    = p_dirichlet_high
+                continue
 
-            elif iy == 0:
-                # print(f'row {iy} / col {ix} - bottom boundary')
-                A[i, i] = 1
-                b[i] = 2
+            # 2) Internal or lateral‐Neumann node
+            T_sum = 0.0
 
-            elif iy == nrows - 1:
-                # print(f'row {iy} / col {ix} - top boundary')
-                A[i, i] = 1
-                b[i] = 1
+            # west face
+            if c > 0:
+                t = T(r, c, r, c - 1)
+                A[i, idx(r, c - 1)] =  t
+                T_sum += t
 
-            elif ix == 0:
-                # print(f'row {iy} / col {ix} - left boundary')
-                A[i, i] = -4 * k[iy, ix]
-                # A[i, i - nrows] = k[iy, ix - 1]
-                A[i, i + nrows] = 2 * k[iy, ix + 1]
-                A[i, i - 1] = k[iy - 1, ix]
-                A[i, i + 1] = k[iy + 1, ix]
+            # east face
+            if c < ncols - 1:
+                t = T(r, c, r, c + 1)
+                A[i, idx(r, c + 1)] =  t
+                T_sum += t
 
-            elif ix == ncolumns - 1:
-                # print(f'row {iy} / col {ix} - bottom boundary')
-                A[i, i] = -4 * k[iy, ix]
-                A[i, i - nrows] = 2 * k[iy, ix - 1]
-                # A[i, i + nrows] = k[iy, ix + 1]
-                A[i, i - 1] = k[iy - 1, ix]
-                A[i, i + 1] = k[iy + 1, ix]
+            # south face
+            if r > 0:
+                t = T(r, c, r - 1, c)
+                A[i, idx(r - 1, c)] =  t
+                T_sum += t
 
-        else:
-            print_error('--> Unknown direction for effective perm flow.')
+            # north face
+            if r < nrows - 1:
+                t = T(r, c, r + 1, c)
+                A[i, idx(r + 1, c)] =  t
+                T_sum += t
 
-    return A, b
+            # for a pure‐Neumann lateral boundary you simply skip the missing face
+            # (i.e. you don’t add a ghost node or double a face weight)
 
+            A[i, i] = -T_sum
+
+    return A.tocsr(), b
 
 def get_darcy_velocity(p, k, nrows, ncolumns, h):
     """ Compute Darcy velocity in the domain using pressure and permeability
@@ -218,7 +311,7 @@ def get_effective_perm(u, v, lx, ly, h, nrows, ncolumns, direction):
     return keff, beff
 
 
-def solve_darcy_equation(nrows, ncolumns, h, aperture, lx, ly):
+def solve_darcy_equation(nrows, ncolumns, h, aperture, lx, ly, direction):
     """ Sets up a linear system for pressure via the Laplace equation. Solves for Pressure, then computes the Darcy velocity. Inverts that for the effective perm, and then back to the effective aperture. 
     
     Parameters
@@ -261,33 +354,26 @@ def solve_darcy_equation(nrows, ncolumns, h, aperture, lx, ly):
 
     """
 
+
     # First, we convert aperture to permability using a local cubic law.
     perm = (aperture**2) / 12
-    print('--> Building matrix - dx')
-    A, b = build_matrix(nrows, ncolumns, h, perm, 'x')
+    print(f'--> Building matrix - d{direction}')
+    A, b = build_matrix(nrows, ncolumns, h, perm, direction=direction)
     print('--> Linear solve')
-    p = np.linalg.solve(A, b)
+    # p = np.linalg.solve(A, b)
+    # ## weird python re-indexing thing
+    # p = p.reshape(ncolumns, nrows).T
+    p = spsolve(A, b)
     ## weird python re-indexing thing
-    p = p.reshape(ncolumns, nrows).T
+    p = p.reshape((nrows, ncolumns))
+
     print('--> Getting velocity')
     u, v = get_darcy_velocity(p, perm, nrows, ncolumns, h)
     print('--> Computing effective permeability')
-    keff_xx, beff_xx = get_effective_perm(u, v, lx, ly, h, nrows, ncolumns,
-                                          'x')
+    keff, beff = get_effective_perm(u, v, lx, ly, h, nrows, ncolumns,
+                                          direction=direction)
 
-    print('--> Building matrix - dy')
-    A, b = build_matrix(nrows, ncolumns, h, perm, 'y')
-    print('--> Linear solve')
-    p = np.linalg.solve(A, b)
-    ## weird python re-indexing thing
-    p = p.reshape(ncolumns, nrows).T
-    print('--> Getting velocity')
-    u, v = get_darcy_velocity(p, perm, nrows, ncolumns, h)
-    print('--> Computing effective permeability')
-    keff_yy, beff_yy = get_effective_perm(u, v, lx, ly, h, nrows, ncolumns,
-                                          'y')
-
-    return keff_xx, beff_xx, keff_yy, beff_yy
+    return keff, beff, p, u, v 
 
 
 def numerical_effective_aperture(self):
@@ -328,9 +414,11 @@ def numerical_effective_aperture(self):
     print(
         "--> Estimating effective aperture via Laplace's equation and Darcy's law in a 2D aperture field"
     )
-    kxx, bxx, kyy, byy = solve_darcy_equation(self.ny, self.nx, self.h,
-                                              self.aperture, self.lx, self.ly)
-
+    kxx, bxx, self.px, self.ux, self.vx = solve_darcy_equation(self.ny, self.nx, self.h,
+                                              self.aperture, self.lx, self.ly, 'x')
+    kyy, byy, self.py, self.uy, self.vy = solve_darcy_equation(self.ny, self.nx, self.h,
+                                              self.aperture, self.lx, self.ly, 'y')
+    
     print(f'--> Effective aperture bxx : {bxx:0.2e} {self.units} ')
     print(f'--> Effective permeability kxx : {kxx:0.2e} {self.units}^2')
     print(f'--> Effective aperture byy : {byy:0.2e} {self.units}')
@@ -339,3 +427,5 @@ def numerical_effective_aperture(self):
     print(f'[{0.0:0.2e} {byy:0.2e}]\n')
     tmp = {'kxx': kxx, 'bxx': bxx, 'kyy': kyy, 'byy': byy}
     self.effective_aperture.update({'numerical': tmp})
+
+
