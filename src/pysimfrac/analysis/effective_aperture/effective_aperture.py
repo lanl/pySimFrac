@@ -1,5 +1,5 @@
 import numpy as np
-from pysimfrac.src.general.helper_functions import print_error, print_warning
+from pysimfrac.general.helper_functions import print_error, print_warning
 
 def gmean_effective_aperture(self):
     """ Estimates the effective aperture of the fracture using the geometric mean

@@ -1,6 +1,6 @@
 import sys
 import numpy as np
-from pysimfrac.src.general.helper_functions import print_error, print_warning
+from pysimfrac.general.helper_functions import print_error, print_warning
 import timeit
 
 

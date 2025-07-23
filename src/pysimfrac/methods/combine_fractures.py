@@ -1,6 +1,6 @@
 import numpy as np
-from pysimfrac.src.general.helper_functions import print_error, all_equal
-from pysimfrac.src.general import simFrac
+from pysimfrac.general.helper_functions import print_error, all_equal
+from pysimfrac.general import simFrac
 
 
 def combine_fractures(self, fracture_list, weights=None):

@@ -1,5 +1,5 @@
 import numpy as np
-from pysimfrac.src.general.helper_functions import print_error
+from pysimfrac.general.helper_functions import print_error
 
 import warnings
 warnings.filterwarnings("ignore", message=".*The 'nopython' keyword.*")

@@ -9,7 +9,7 @@ SimFrac object class.
 """
 import os, sys
 import numpy as np
-from pysimfrac.src.general.helper_functions import print_error
+from pysimfrac.general.helper_functions import print_error
 
 class SimFrac():
     """ The SimFrac Object 
@@ -45,44 +45,44 @@ class SimFrac():
             * If nx and ny are provided, the resulted hx and hy must be the same. 
         
     """
-    from pysimfrac.src.general.legal import legal
+    from pysimfrac.general.legal import legal
 
-    from pysimfrac.src.general.helper_functions import check_generation_parameter
+    from pysimfrac.general.helper_functions import check_generation_parameter
 
     ##object functions
-    from pysimfrac.src.methods.surface_generation import create_fracture, initialize_method, print_method_params, initialize_parameters
+    from pysimfrac.methods.surface_generation import create_fracture, initialize_method, print_method_params, initialize_parameters
 
-    from pysimfrac.src.methods.gaussian import create_gaussian, check_gaussian_parameters, initialize_gaussian_parameters
+    from pysimfrac.methods.gaussian import create_gaussian, check_gaussian_parameters, initialize_gaussian_parameters
 
-    from pysimfrac.src.methods.box import create_box, check_box_parameters, initialize_box_parameters
+    from pysimfrac.methods.box import create_box, check_box_parameters, initialize_box_parameters
 
-    from pysimfrac.src.methods.spectral import create_spectral, check_spectral_parameters, initialize_spectral_parameters
+    from pysimfrac.methods.spectral import create_spectral, check_spectral_parameters, initialize_spectral_parameters
 
-    from pysimfrac.src.methods.combine_fractures import combine_fractures
+    from pysimfrac.methods.combine_fractures import combine_fractures
 
-    from pysimfrac.src.analysis.geostats import compute_moments, print_moments, get_surface_pdf, get_surface_cdf, plot_surface_pdf
+    from pysimfrac.analysis.geostats import compute_moments, print_moments, get_surface_pdf, get_surface_cdf, plot_surface_pdf
 
-    from pysimfrac.src.analysis.geostats_acf import compute_acf, plot_acf
+    from pysimfrac.analysis.geostats_acf import compute_acf, plot_acf
 
-    from pysimfrac.src.analysis.geostats_variogram import single_field_variogram, compute_variogram, plot_variogram
+    from pysimfrac.analysis.geostats_variogram import single_field_variogram, compute_variogram, plot_variogram
 
-    from pysimfrac.src.analysis.make_plots import plot_aperture_field, plot_surface, plot_3D
+    from pysimfrac.analysis.make_plots import plot_aperture_field, plot_surface, plot_3D
 
-    from pysimfrac.src.analysis.voxelization import pad, voxelize
+    from pysimfrac.analysis.voxelization import pad, voxelize
 
-    from pysimfrac.src.analysis.modify_surfaces import apply_shear, set_mean_aperture, aperture_check, reset_bottom, project_to_aperture, rescale_surface
+    from pysimfrac.analysis.modify_surfaces import apply_shear, set_mean_aperture, aperture_check, reset_bottom, project_to_aperture, rescale_surface
 
-    from pysimfrac.src.io.dump_ascii import dump_surface_ascii, dump_ascii
+    from pysimfrac.io.dump_ascii import dump_surface_ascii, dump_ascii
 
-    from pysimfrac.src.io.dump_pickle import to_pickle, from_pickle
-    from pysimfrac.src.io.dump_stl import dump_stl, write_lagrit_script_part1
+    from pysimfrac.io.dump_pickle import to_pickle, from_pickle
+    from pysimfrac.io.dump_stl import dump_stl, write_lagrit_script_part1
 
 
-    from pysimfrac.src.analysis.effective_aperture.effective_aperture import get_effective_aperture, gmean_effective_aperture, hmean_effective_aperture, mean_effective_aperture
+    from pysimfrac.analysis.effective_aperture.effective_aperture import get_effective_aperture, gmean_effective_aperture, hmean_effective_aperture, mean_effective_aperture
 
-    from pysimfrac.src.analysis.effective_aperture.numerical_effective_aperture import numerical_effective_aperture
+    from pysimfrac.analysis.effective_aperture.numerical_effective_aperture import numerical_effective_aperture
     
-    from pysimfrac.src.methods.to_2D import generate_2D
+    from pysimfrac.methods.to_2D import generate_2D
 
     def __init__(self,
                  lx=None,

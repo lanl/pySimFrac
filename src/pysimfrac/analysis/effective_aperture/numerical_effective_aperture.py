@@ -1,5 +1,5 @@
 import numpy as np
-from pysimfrac.src.general.helper_functions import print_error
+from pysimfrac.general.helper_functions import print_error
 
 
 from scipy.sparse import lil_matrix, csr_matrix

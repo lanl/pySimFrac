@@ -29,3 +29,6 @@ package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools_scm]
+version_file = "src/pysimfrac/_version.py"  # Where version will be written

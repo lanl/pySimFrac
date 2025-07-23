@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from vedo import Plotter, Volume
 
-from pysimfrac.src.general.helper_functions import print_error
+from pysimfrac.general.helper_functions import print_error
 
 
 def Euclidean_distance(frac_3D):

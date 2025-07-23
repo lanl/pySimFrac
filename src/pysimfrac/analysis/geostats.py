@@ -3,7 +3,7 @@ from scipy import stats
 import seaborn as sns
 import matplotlib.pylab as plt
 
-from pysimfrac.src.general.helper_functions import print_error
+from pysimfrac.general.helper_functions import print_error
 
 def find_first_zero_crossing(lags, acf):
     """ Finds the first zero crossing of the autocorrelation function and returns the corresponding distance where the crossing occurs
