@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pysimfrac"
+version = "1.1"
+description = "pySimFrac is a Python package to generate and analyze rough surfaces for single fractures."
+authors = [
+    { name = "Jeffrey Hyman", email = "jhyman@lanl.gov" },
+    { name = "Prakash Purswani", email = "ppurswani@lanl.gov" },
+    { name = "Eric Guiltinan", email = "eric.guiltinan@lanl.gov" },
+    { name = "Javier Santos", email = "jesantos@lanl.gov" }
+]
+readme = "README.md"
+license = { text = "BSD-3-Clause" }
+requires-python = ">=3.8"
+dependencies = [
+    "numpy",
+    "scipy",
+    "matplotlib",
+    "seaborn",
+    "scikit-gstat",
+    "vedo"
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
