@@ -3,7 +3,7 @@ import numpy as np
 from scipy import stats
 import matplotlib.pylab as plt
 
-from pysimfrac.src.general.helper_functions import print_error
+from pysimfrac.general.helper_functions import print_error
 
 
 def find_first_zero_crossing(lags, acf):

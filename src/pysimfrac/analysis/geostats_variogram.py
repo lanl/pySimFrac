@@ -3,7 +3,7 @@ import numpy as np
 import skgstat as skg
 import matplotlib.pylab as plt
 
-from pysimfrac.src.general.helper_functions import print_error, print_warning
+from pysimfrac.general.helper_functions import print_error, print_warning
 
 ## Variogram is computed using scikit-gstat
 ## https://scikit-gstat.readthedocs.io

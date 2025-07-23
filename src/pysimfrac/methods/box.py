@@ -1,5 +1,5 @@
 import numpy as np
-from pysimfrac.src.general.helper_functions import print_error, set_mean_and_var
+from pysimfrac.general.helper_functions import print_error, set_mean_and_var
 
 
 def initialize_box_parameters(self):

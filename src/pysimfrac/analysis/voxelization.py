@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from pysimfrac.src.general.helper_functions import print_warning
+from pysimfrac.general.helper_functions import print_warning
 
 def pad(self, target_size):
     """
