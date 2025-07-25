@@ -50,7 +50,7 @@ pip install numpy scipy matplotlib seaborn scikit-gstat vedo
 
 ```bash
 git clone https://github.com/lanl/pySimFrac.git
-cd pySimFrac/src
+cd pySimFrac
 
 # Install build tool
 pip install build
