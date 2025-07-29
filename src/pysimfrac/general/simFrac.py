@@ -79,7 +79,7 @@ class SimFrac():
  
     from pysimfrac.io.dump_pickle import to_pickle, from_pickle
     from pysimfrac.io.dump_stl import dump_stl, write_lagrit_script_convert_top_and_bottom_to_avs, write_lagrit_script_extract_exterior, _run_lagrit
-
+    from pysimfrac.io.dump_ascii import dump_surface_ascii, dump_ascii
     
     from pysimfrac.methods.to_2D import generate_2D
 
