@@ -62,18 +62,20 @@ def read_permeability():
 
 
 
-def check_lbm_install():
+def check_lbm_install(sim_mode='single-phase'):
     """
     Checks whether the MPLBM software has been installed. 
 
-    The function verifies the presence of the 'permeability' file in the 'lbm_light/src/1-phase_LBM/' directory. 
+    The function verifies the presence of the 'permeability' or 'ShanChen' file in the 
+    corresponding directory based on the simulation_mode input. 
     If the file is not present, it indicates that the LBM software is not installed and raises a 
     NotImplementedError. If the file is present, it prints a message to the console to indicate that the 
     LBM installation was found.
 
     Parameters
     -----------
-        None
+    simulation_mode: str, optional
+        Simulation mode ('single-phase' or 'two-phase'). Defaults to 'single-phase'.
 
     Returns
     --------
@@ -82,7 +84,7 @@ def check_lbm_install():
     Raises
     -------
         NotImplementedError
-            If the 'permeability' file cannot be found in the 'lbm_light/src/1-phase_LBM/' directory, suggesting that 
+            If the required file cannot be found in the corresponding directory, suggesting that 
             the LBM software has not been installed.
 
     Notes
@@ -91,16 +93,20 @@ def check_lbm_install():
 
     Examples
     --------
-        >>> check_lbm_install()
+        >>> check_lbm_install('single-phase')
         LBM installation was found
     """
-    if not os.path.isfile('lbm_light/src/1-phase_LBM/permeability'):
-        raise NotImplementedError('\nLBM has not been installed\n')
+    if sim_mode == 'single-phase':
+        file_path = 'lbm_light/src/1-phase_LBM/permeability'
+    elif sim_mode == 'two-phase':
+        file_path = 'MPLBM-UT/src/2-phase_LBM/ShanChen'
     else:
-        print('\nLBM installation was found\n')
-   
-    
+        raise ValueError(f'Invalid simulation_mode: {sim_mode}')
 
+    if not os.path.isfile(file_path):
+        raise NotImplementedError(f'\nLBM for {sim_mode} mode has not been installed\n')
+    else:
+        print(f'\nLBM for {sim_mode} mode installation was found\n')
 
 def create_folder(folder_name):
     """
@@ -182,9 +188,6 @@ def replace_word(file, old_word, new_word):
     f.write(newdata)
     f.close()
 
-    
-    
-    
 def create_single_phase_input_file(input_file_name, geom_name, domain_size, periodic, io_folders, sim_settings, save_vtks):
     """
     Creates an XML input file for a single phase flow simulation based on given parameters.
@@ -259,8 +262,222 @@ def create_single_phase_input_file(input_file_name, geom_name, domain_size, peri
         file.write(f'\t<vtk_out> {save_vtks} </vtk_out>\n')
         file.write('</simulations>')
 
-    
+def create_two_phase_input_file(input_file_name, geom_name, domain_size, periodic, io_folders, sim_settings):
+    # Generate input xml file
+    x_size, y_size, z_size = domain_size
+    periodic_x, periodic_y, periodic_z = periodic
 
+    # Parse I/O inputs
+    input_folder, output_folder = io_folders
+
+    # Parse simulation inputs
+    sim_max_iter, sim_convergence, convergence_relperm,max_iterations_relperm, fluid_1_init, fluid_2_init, Gc, omega_f1, omega_f2,G_ads_f1_s1, G_ads_f1_s2, G_ads_f1_s3, G_ads_f1_s4, convergence_iter, convergence_iter,save_sim, save_iter, gif_iter, vtk_iter, rho_f2_vtk, rho_f2_vtk, print_geom, print_stl,save_vtks, pressure_bc, minimum_radius, num_pressure_steps, force_f1, force_f2, rho_f1, rho_f2 = sim_settings
+
+    input_xml_file = '2_phase_sim_input.xml'
+    
+    restart_sim = 'False'
+    
+    if pressure_bc == True:
+        minimum_radius = minimum_radius
+        num_pc_steps = num_pressure_steps
+    else:
+        minimum_radius = 1
+        num_pc_steps = 0
+    
+    load_fluid_type = 'geom'
+    if load_fluid_type == 'geom':
+        load_fluid_from_geom = True
+    else:
+        load_fluid_from_geom = False
+
+    with open(input_file_name, 'w') as file:    
+        file.write('<?xml version="1.0" ?>\n\n')  # Write xml header
+        
+        # Restart sim?
+        file.write(f'<load_savedstated> {restart_sim} </load_savedstated>\n\n')
+        
+        # Write geometry section
+        file.write('<geometry>\n')
+        # Geometry name
+        file.write(f'\t<file_geom> input/{geom_name}.dat </file_geom>\n')
+        # Geometry size
+        file.write(f'\t<size> <x> {x_size} </x> <y> {y_size} </y> <z> {z_size} </z> </size>\n')
+        # Periodicity
+        file.write(f'\t<per>\n')
+        file.write(f'\t\t<fluid1> <x> {periodic_x} </x> <y> {periodic_y} </y> <z> {periodic_z} </z> </fluid1>\n')
+        file.write(f'\t\t<fluid2> <x> {periodic_x} </x> <y> {periodic_y} </y> <z> {periodic_z} </z> </fluid2>\n')
+        file.write(f'\t</per>\n')
+        file.write('</geometry>\n\n')
+        
+        # Write initial position of fluids
+        file.write(f'<init>\n')
+        file.write(f'\t<fluid_from_geom> {load_fluid_from_geom} </fluid_from_geom>\n')
+        file.write(f'\t<fluid1>\n')
+        file.write(f'\t\t <x1> {fluid_1_init[0]} </x1> <y1> {fluid_1_init[1]} </y1> <z1> {fluid_1_init[2]} </z1>\n')
+        file.write(f'\t\t <x2> {fluid_1_init[3]} </x2> <y2> {fluid_1_init[4]} </y2> <z2> {fluid_1_init[5]} </z2>\n')
+        file.write(f'\t</fluid1>\n')
+        file.write(f'\t<fluid2>\n')
+        file.write(f'\t\t <x1> {fluid_2_init[0]} </x1> <y1> {fluid_2_init[1]} </y1> <z1> {fluid_2_init[2]} </z1>\n')
+        file.write(f'\t\t <x2> {fluid_2_init[3]} </x2> <y2> {fluid_2_init[4]} </y2> <z2> {fluid_2_init[5]} </z2>\n')
+        file.write(f'\t</fluid2>\n')
+        file.write('</init>\n\n')
+        
+        # Write fluid data
+        file.write('<fluids>\n')
+        
+        file.write(f'\t<Gc> {Gc} </Gc>\n')
+        file.write(f'\t<omega_f1> {omega_f1} </omega_f1>\n')
+        file.write(f'\t<omega_f2> {omega_f2} </omega_f2>\n')
+        file.write(f'\t<force_f1> {force_f1} </force_f1>\n')
+        file.write(f'\t<force_f2> {force_f2} </force_f2>\n')
+        file.write(f'\t<G_ads_f1_s1> {G_ads_f1_s1} </G_ads_f1_s1>\n')
+        file.write(f'\t<G_ads_f1_s2> {G_ads_f1_s2} </G_ads_f1_s2>\n')
+        file.write(f'\t<G_ads_f1_s3> {G_ads_f1_s3} </G_ads_f1_s3>\n')
+        file.write(f'\t<G_ads_f1_s4> {G_ads_f1_s4} </G_ads_f1_s4>\n')
+        
+        file.write(f'\t<rho_f1> {rho_f1} </rho_f1>\n')
+        file.write(f'\t<rho_f2> {rho_f2} </rho_f2>\n')
+        
+        file.write(f'\t<pressure_bc> {pressure_bc} </pressure_bc>\n')
+        file.write(f'\t<rho_f1_i> {rho_f1} </rho_f1_i>\n')
+        file.write(f'\t<rho_f2_i> {rho_f2} </rho_f2_i>\n')
+        file.write(f'\t<num_pc_steps> {num_pc_steps} </num_pc_steps>\n')
+        file.write(f'\t<min_radius> {minimum_radius} </min_radius>\n')
+        file.write(f'\t<rho_d> 0.06 </rho_d>\n')
+        
+        file.write('</fluids>\n\n')
+        
+        # Write output section
+        file.write('<output>\n')
+        
+        file.write(f'\t<out_folder> {output_folder} </out_folder>\n')
+        file.write(f'\t<save_it> {save_iter} </save_it>\n')
+        file.write(f'\t<save_sim> {save_sim} </save_sim>\n')
+        file.write(f'\t<convergence> {sim_convergence} </convergence>\n')
+        file.write(f'\t<it_max> {sim_max_iter} </it_max>\n')
+        file.write(f'\t<it_conv> {convergence_iter} </it_conv>\n')
+        file.write(f'\t<it_gif> {gif_iter} </it_gif>\n')
+        file.write(f'\t<rho_vtk> {rho_f2_vtk} </rho_vtk>\n')
+        file.write(f'\t<it_vtk> {vtk_iter} </it_vtk>\n')
+        file.write(f'\t<print_geom> {print_geom} </print_geom>\n')
+        file.write(f'\t<print_stl> {print_stl} </print_stl>\n')
+        
+        file.write('</output>')
+
+    #return
+
+
+    
+class SimulationInitializer:
+    def __init__(self, init_type):
+        self.init_type = init_type
+
+    def initialize_simulation_matrix(self, rock, wetting_saturation_ratio=0.5, args=None):
+        if self.init_type == 'random':
+            return self.random_simulation_matrix(rock, wetting_saturation_ratio, args)
+        elif self.init_type == 'geometric':
+            return self.geometric_simulation_matrix(rock, wetting_saturation_ratio, args)
+        else:
+            raise ValueError("Invalid initialization type. Choose 'random' or 'geometric'.")
+
+    def random_simulation_matrix(self, rock, wetting_saturation_ratio, args=None):
+        erock = edist(rock)
+        
+        # Ensure all the BCs have bounce back nodes
+        erock[0, :, :] = 1
+        erock[:, 0, :] = 1
+        erock[:, :, 0] = 1
+        erock[-1, :, :] = 1
+        erock[:, -1, :] = 1
+        erock[:, :, -1] = 1
+        
+        # Re open the pores
+        erock[rock == 0] = 0
+        
+        # Get the final matrix [0,1,2]
+        erock[(erock > 0) & (erock < 2)] = 1
+        erock[erock > 1] = 2
+        
+        # Get indices of all pore spaces
+        pore_indices = np.argwhere(erock==0)
+        
+        # Determine number of each type of fluid to insert
+        num_pores = len(pore_indices)
+        num_wetting = int(wetting_saturation_ratio * num_pores)
+        num_nonwetting = num_pores - num_wetting
+
+        # Shuffle pore indices and separate into wetting and non-wetting
+        np.random.shuffle(pore_indices)
+        wetting_indices = pore_indices[:num_wetting]
+        nonwetting_indices = pore_indices[num_wetting:]
+
+        # Assign new values to wetting phase, boundary, inside solid, non-wetting phase
+        erock = erock.astype(np.int16)
+        erock[erock == 1] = 2609  # boundary
+        erock[erock == 2] = 2610  # grains
+        for index in wetting_indices:
+            erock[tuple(index)] = 2608  # wetting fluid
+        for index in nonwetting_indices:
+            erock[tuple(index)] = 2611  # non-wetting fluid
+        erock = erock.astype(np.int16)
+        
+        # Determine the geometry name based on the 'print_size' flag
+        if args.print_size:
+            size = erock.shape
+            geom_name = f'{args.name}_{size[0]}_{size[1]}_{size[2]}'
+        else:
+            geom_name = args.name
+        
+        erock.flatten().tofile(f'{args.loc}/input/{geom_name}.dat')
+        return erock
+
+    def geometric_simulation_matrix(self, rock, wetting_saturation_ratio, args=None):
+        erock = edist(rock)
+        
+        # Ensure all the BCs have bounce back nodes
+        erock[0, :, :] = 1
+        erock[:, 0, :] = 1
+        erock[:, :, 0] = 1
+        erock[-1, :, :] = 1
+        erock[:, -1, :] = 1
+        erock[:, :, -1] = 1
+        
+        # Re open the pores
+        erock[rock == 0] = 0
+        
+        # Get the final matrix [0,1,2]
+        erock[(erock > 0) & (erock < 2)] = 1
+        erock[erock > 1] = 2
+        
+        pore_voxel_num = np.count_nonzero(erock==0)
+        wetting_voxel_num = int(pore_voxel_num*wetting_saturation_ratio)
+        non_wetting_voxel_num = pore_voxel_num - wetting_voxel_num 
+        
+        # Fill non-wetting ratio from the farthest points from the grains 
+        inverse_edist = edist(np.where(rock==1, 0, 1))
+        sorted_indices = np.unravel_index(np.argsort(-inverse_edist, axis=None), inverse_edist.shape)
+        
+        # Assuming 'arr_to_change' is the array you want to change
+        for i in range(non_wetting_voxel_num):
+            erock[sorted_indices[0][i], sorted_indices[1][i], sorted_indices[2][i]] = 3
+        
+        # Assign new values to wetting phase, boundary, inside solid, non-wetting phase
+        erock = erock.astype(np.int16)
+        erock[erock == 0] = 2608  # pore space / wetting fluid
+        erock[erock == 1] = 2609  # boundary
+        erock[erock == 2] = 2610  # grains
+        erock[erock == 3] = 2611  # non-wetting fluid
+        erock = erock.astype(np.int16)
+        
+        # Determine the geometry name based on the 'print_size' flag
+        if args.print_size:
+            size = erock.shape
+            geom_name = f'{args.name}_{size[0]}_{size[1]}_{size[2]}'
+        else:
+            geom_name = args.name
+        
+        erock.flatten().tofile(f'{args.loc}/input/{geom_name}.dat')
+        return erock
 
 def create_geom_edist(rock, args):
     """
@@ -390,7 +607,7 @@ def erase_regions(rock):
     
     # Erase all isolated regions within the rock matrix
     # This is done by setting all elements in 'rock' that are part of an isolated region (where the corresponding element in 'blobs_labels' is greater than 1) to 0
-    rock[blobs_labels > 1] = 0
+    rock[blobs_labels > 1] = 1
     
     return rock
 
@@ -404,7 +621,7 @@ class write_MPLBM():
     write inputs, and execute the simulation. 
     """
 
-    def __init__(self, frac_obj, buffer_layers=2, cpus=4, num_hrs=14, allocation=None):
+    def __init__(self, frac_obj, buffer_layers=2, cpus=4, num_hrs=14, allocation=None, sim_mode='single-phase', fluid_ini_conf='geometric', wetting_f_sat=0.5):
         """
         Initializes the write_MPLBM class
         
@@ -421,7 +638,7 @@ class write_MPLBM():
                 The number of hours the simulation should run. Defaults to 14.
             allocation : str, optional
                 A specific allocation for the simulation. Defaults to None.
-    
+
         Returns
         --------
             None
@@ -431,13 +648,16 @@ class write_MPLBM():
             The class initializes by defining the source location of LBM (Lattice Boltzmann Method), creating required
             directories, copying the surface fraction object, and pre-processing the 3D fracture to generate an efficient 
             geometry for simulation. It also writes a shell script to run the simulation.
-    
+
             The class includes methods to create new folders, write geometry, write various input files, copy necessary 
             data, edit inputs, and save the configuration as a pickle file for future reference. 
         """ 
-        
         # Location of LBM source file
-        lbm_loc = '../../lbm_light/src/1-phase_LBM/permeability'
+        if sim_mode == 'single-phase':
+            lbm_loc = '../../lbm_light/src/1-phase_LBM/permeability' 
+        elif sim_mode == 'two-phase':
+            lbm_loc = '../../MPLBM-UT/src/2-phase_LBM/ShanChen'
+                    
         
         # Define geometry namespace
         geom = Namespace()
@@ -470,28 +690,94 @@ class write_MPLBM():
         # Preprocess the 3D fracture and generate an efficient geometry for simulation
         frac_3D = 1 - np.transpose(frac_obj.frac_3D, (2, 0, 1))
         frac_3D = erase_regions(frac_3D)
-        frac_3D = create_geom_edist(frac_3D, geom)
-        
-        # Create input file
-        frac_size = frac_3D.shape
-        input_file_name = f"{self.folder_path}/{name}.xml"
-        geom_name = f'{geom.name}_{frac_size[0]}_{frac_size[1]}_{frac_size[2]}'
-        domain_size = [frac_size[0], frac_size[1], frac_size[2]]
-        periodic = ["false", "false", "false"]
-        
-        create_folder(f'{self.folder_path}/output')
-        
-        io_folders = ['input/', 'output/']
-        num_sims = 1
-        sim_pressure = 0.0005
-        sim_max_iter = 1000000
-        sim_convergence = 0.0001
-        sim_settings = [num_sims, sim_pressure, sim_max_iter, sim_convergence]
-        save_vtks = "true"
-        create_single_phase_input_file(input_file_name, geom_name, domain_size, periodic, io_folders, sim_settings, save_vtks)
-        
+
+
+        if sim_mode == 'single-phase':
+            frac_3D = create_geom_edist(frac_3D, geom)
+            # Create input file
+            frac_size = frac_3D.shape
+            input_file_name = f"{self.folder_path}/{name}.xml"
+            geom_name = f'{geom.name}_{frac_size[0]}_{frac_size[1]}_{frac_size[2]}'
+            domain_size = [frac_size[0], frac_size[1], frac_size[2]]
+            periodic = ["false", "false", "false"]
+            
+            create_folder(f'{self.folder_path}/output')
+            
+            io_folders = ['input/', 'output/']
+            num_sims = 1
+            sim_pressure = 0.0005
+            sim_max_iter = 1000000
+            sim_convergence = 0.0001
+            sim_settings = [num_sims, sim_pressure, sim_max_iter, sim_convergence]
+            save_vtks = "true"
+            
+            create_single_phase_input_file(input_file_name, geom_name, domain_size, periodic, io_folders, sim_settings, save_vtks)
+
+        elif sim_mode == 'two-phase':
+            sim_init = SimulationInitializer(fluid_ini_conf)  # or 'geometric'
+            frac_3D = sim_init.initialize_simulation_matrix(frac_3D, wetting_f_sat, geom)
+            
+            frac_size = frac_3D.shape
+            input_file_name = f"{self.folder_path}/{name}.xml"
+            geom_name = f'{geom.name}_{frac_size[0]}_{frac_size[1]}_{frac_size[2]}'
+            domain_size = [frac_size[0], frac_size[1], frac_size[2]]
+            periodic = ["True", "True", "True"]
+            create_folder(f'{self.folder_path}/output')
+            
+            io_folders = ['input/', 'output/']
+
+
+            # sim settings
+            sim_pressure = 0.0005
+            sim_max_iter = 500000
+            sim_convergence = 1e-4
+            convergence_relperm = 1e-6
+            max_iterations_relperm = 10**5
+            
+            fluid_1_init = [1, 2, 1, 75, 1, 75]
+            fluid_2_init = [3, 150, 1, 75, 1, 75]
+            Gc = 0.9
+            omega_f1 = 1
+            omega_f2 = 1
+            G_ads_f1_s1 =-0.4
+            G_ads_f1_s2 = 0
+            G_ads_f1_s3 = 0
+            G_ads_f1_s4 = 0
+
+            convergence_iter = 1000
+
+            save_sim = True
+            save_iter = 20000
+            gif_iter = 2000
+            vtk_iter = 2000
+            rho_f2_vtk = False
+            print_geom = True
+            print_stl = False
+            save_vtks =True
+
+            pressure_bc = False
+            minimum_radius = 3
+            num_pressure_steps = 1
+            force_f1 = 1e-4
+            force_f2 = 1e-4
+            rho_f1 = 2
+            rho_f2 = 2   
+
+            sim_settings = [sim_max_iter, sim_convergence, convergence_relperm,
+                            max_iterations_relperm, fluid_1_init, fluid_2_init, Gc, omega_f1, omega_f2,
+                            G_ads_f1_s1, G_ads_f1_s2, G_ads_f1_s3, G_ads_f1_s4, convergence_iter, convergence_iter,
+                            save_sim, save_iter, gif_iter, vtk_iter, rho_f2_vtk, rho_f2_vtk, print_geom, print_stl,
+                            save_vtks, pressure_bc, minimum_radius, num_pressure_steps, force_f1, force_f2,
+                            rho_f1, rho_f2]
+            
+            create_two_phase_input_file(input_file_name, geom_name, domain_size, periodic, io_folders, sim_settings)
+                 
+        else:
+            raise ValueError(f'Invalid simulation_mode: {sim_mode}')
+
         # Write shell script to run the simulation
-        np.savetxt(f'{self.folder_path}/run_{name}.sh', [f'mpirun -n {cpus} {lbm_loc} {name}.xml > {name}.txt'], fmt='%s') 
+        np.savetxt(f'{self.folder_path}/run_{name}.sh', [f'mpirun -np {cpus} {lbm_loc} {name}.xml > {name}.txt'], fmt='%s') 
+        print('write LBM end')    
 
 
     def create_new_folder(self):
@@ -544,10 +830,12 @@ class write_MPLBM():
             None
         
         """
+
         tofile = np.append([*frac.shape], frac.flatten('F'))
         np.savetxt(f'{self.folder_path}/frac.dat', tofile, fmt='%.0f')
-    
-   
+
+        
+
 
     def save_pickle(self):
         """
