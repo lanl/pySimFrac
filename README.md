@@ -77,7 +77,7 @@ fracture.params["roughness"]["value"] = 0.5
 
 # Generate and visualize
 fracture.create_fracture()
-fracture.plot_surfaces()
+fracture.plot_surface()
 fracture.plot_aperture_field()
 ```
 
