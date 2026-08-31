@@ -65,7 +65,10 @@ def voxelize(self, solid_voxels=None, target_size=None):
         The resulting voxelized 3D array is stored in the 'frac_3D' attribute of the object, with the first z-layer set to solid.
     """
 
-    import numpy.lib.index_tricks as ndi
+    # Incorrect numpy method call:
+    # import numpy.lib.index_tricks as ndi
+    # Should be fixed as this (for numpy v2.5.2):
+    import numpy.lib._index_tricks_impl as ndi
 
     self.aperture_check()  # check that there are no negative apertures
     self.reset_bottom()  # push the negative values to 0
