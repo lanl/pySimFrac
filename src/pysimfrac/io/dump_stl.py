@@ -122,7 +122,7 @@ stack / layers/avs/ surf_bottom.inp / surf_top.inp
 
 stack / fill / cmohex / cmo_stack 
 
-// dump / stacked.inp / cmohex
+dump / stacked.inp / cmohex
 
 resetpts / itp
 cmo / status / brief
@@ -157,14 +157,16 @@ rmpoint / compress
 
 
 ## Grab surfaces and dump stl files
+## LaGriT hex side faces: itetclr 3 = x max (right), 4 = y max (outlet),
+## 5 = x min (left), 6 = y min (inlet)
 cmo / copy/ mo_inlet /mo_surf
-cmo / select / mo_inlet 
-eltset/ e_delete/ itetclr ne 4
+cmo / select / mo_inlet
+eltset/ e_delete/ itetclr ne 6
 rmpoint / element / eltset get e_delete
 rmpoint / compress
-cmo / status / brief 
+cmo / status / brief
 hextotet / 2 / mo_tri  / mo_inlet
-cmo / select / mo_tri 
+cmo / select / mo_tri
 // dump / inlet.inp / mo_tri
 dump / stl / inlet.stl / mo_tri 
 cmo / delete / mo_tri
@@ -172,12 +174,12 @@ cmo / delete / mo_inlet
 
 cmo / copy/ mo_inlet /mo_surf
 cmo / select / mo_inlet 
-eltset/ e_delete/ itetclr ne 6
+eltset/ e_delete/ itetclr ne 4
 rmpoint / element / eltset get e_delete
 rmpoint / compress
-cmo / status / brief 
+cmo / status / brief
 hextotet / 2 / mo_tri  / mo_inlet
-cmo / select / mo_tri 
+cmo / select / mo_tri
 // dump / outlet.inp / mo_tri
 dump / stl / outlet.stl / mo_tri
 cmo / delete / mo_tri
@@ -185,12 +187,12 @@ cmo / delete / mo_inlet
 
 cmo / copy/ mo_inlet /mo_surf
 cmo / select / mo_inlet 
-eltset/ e_delete/ itetclr ne 3
+eltset/ e_delete/ itetclr ne 5
 rmpoint / element / eltset get e_delete
 rmpoint / compress
-cmo / status / brief 
+cmo / status / brief
 hextotet / 2 / mo_tri  / mo_inlet
-cmo / select / mo_tri 
+cmo / select / mo_tri
 // dump / left.inp / mo_tri
 dump / stl / left.stl / mo_tri
 cmo / delete / mo_tri
@@ -199,12 +201,12 @@ cmo / delete / mo_inlet
 
 cmo / copy/ mo_inlet /mo_surf
 cmo / select / mo_inlet 
-eltset/ e_delete/ itetclr ne 5
+eltset/ e_delete/ itetclr ne 3
 rmpoint / element / eltset get e_delete
 rmpoint / compress
-cmo / status / brief 
+cmo / status / brief
 hextotet / 2 / mo_tri  / mo_inlet
-cmo / select / mo_tri 
+cmo / select / mo_tri
 // dump / right.inp / mo_tri
 dump / stl / right.stl / mo_tri
 cmo / delete / mo_tri
