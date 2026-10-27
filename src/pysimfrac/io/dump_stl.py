@@ -25,8 +25,8 @@ def write_lagrit_script_convert_top_and_bottom_to_avs(self):
 
     lagrit_script = f"""
 
-define / NX / {self.nx}
-define / NY / {self.ny}
+define / NX / {self.nx + 1}
+define / NY / {self.ny + 1}
 
 define / X1 / {self.lx:0.2f} 
 define / Y1 / {self.ly:0.2f}  
@@ -264,8 +264,8 @@ def write_lagrit_script_extract_exterior(self):
     bottom_surface_height = min(min(bottom),min(top))*1.2
 
     lagrit_script = f"""
-define / NX / {self.nx}
-define / NY / {self.ny}
+define / NX / {self.nx + 1}
+define / NY / {self.ny + 1}
 
 define / X1 / {self.lx:0.2f} 
 define / Y1 / {self.ly:0.2f}  
@@ -506,9 +506,14 @@ def dump_stl(self, interior=True, exterior=False, cleanup_run=True):
     """
 
     print("--> Dumping fracture surfaces to STL")
-    top = np.reshape(self.top, self.nx*self.ny)   
+    # The surfaces are periodic (FFT synthesis), with nx samples per period
+    # in x. Repeat the first row/column at the end so the STL spans exactly
+    # one period, z(0) == z(lx), and the grid spacing is lx / nx = h; the
+    # LaGriT grids are (nx + 1) x (ny + 1) accordingly (all of them: the
+    # exterior blocks are stacked with these surfaces and must match).
+    top = np.pad(self.top, ((0, 1), (0, 1)), mode="wrap").reshape(-1)
     np.savetxt("top.dat", top, delimiter=" ")
-    bottom = np.reshape(self.bottom, self.nx*self.ny)   
+    bottom = np.pad(self.bottom, ((0, 1), (0, 1)), mode="wrap").reshape(-1)
     np.savetxt("bottom.dat", bottom, delimiter=" ")
 
     self.write_lagrit_script_convert_top_and_bottom_to_avs()
