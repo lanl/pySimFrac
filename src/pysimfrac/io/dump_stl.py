@@ -25,8 +25,8 @@ def write_lagrit_script_convert_top_and_bottom_to_avs(self):
 
     lagrit_script = f"""
 
-define / NX / {self.nx}
-define / NY / {self.ny}
+define / NX / {self.nx + 1}
+define / NY / {self.ny + 1}
 
 define / X1 / {self.lx:0.2f} 
 define / Y1 / {self.ly:0.2f}  
@@ -122,7 +122,7 @@ stack / layers/avs/ surf_bottom.inp / surf_top.inp
 
 stack / fill / cmohex / cmo_stack 
 
-// dump / stacked.inp / cmohex
+dump / stacked.inp / cmohex
 
 resetpts / itp
 cmo / status / brief
@@ -157,14 +157,16 @@ rmpoint / compress
 
 
 ## Grab surfaces and dump stl files
+## LaGriT hex side faces: itetclr 3 = x max (right), 4 = y max (outlet),
+## 5 = x min (left), 6 = y min (inlet)
 cmo / copy/ mo_inlet /mo_surf
-cmo / select / mo_inlet 
-eltset/ e_delete/ itetclr ne 4
+cmo / select / mo_inlet
+eltset/ e_delete/ itetclr ne 6
 rmpoint / element / eltset get e_delete
 rmpoint / compress
-cmo / status / brief 
+cmo / status / brief
 hextotet / 2 / mo_tri  / mo_inlet
-cmo / select / mo_tri 
+cmo / select / mo_tri
 // dump / inlet.inp / mo_tri
 dump / stl / inlet.stl / mo_tri 
 cmo / delete / mo_tri
@@ -172,12 +174,12 @@ cmo / delete / mo_inlet
 
 cmo / copy/ mo_inlet /mo_surf
 cmo / select / mo_inlet 
-eltset/ e_delete/ itetclr ne 6
+eltset/ e_delete/ itetclr ne 4
 rmpoint / element / eltset get e_delete
 rmpoint / compress
-cmo / status / brief 
+cmo / status / brief
 hextotet / 2 / mo_tri  / mo_inlet
-cmo / select / mo_tri 
+cmo / select / mo_tri
 // dump / outlet.inp / mo_tri
 dump / stl / outlet.stl / mo_tri
 cmo / delete / mo_tri
@@ -185,12 +187,12 @@ cmo / delete / mo_inlet
 
 cmo / copy/ mo_inlet /mo_surf
 cmo / select / mo_inlet 
-eltset/ e_delete/ itetclr ne 3
+eltset/ e_delete/ itetclr ne 5
 rmpoint / element / eltset get e_delete
 rmpoint / compress
-cmo / status / brief 
+cmo / status / brief
 hextotet / 2 / mo_tri  / mo_inlet
-cmo / select / mo_tri 
+cmo / select / mo_tri
 // dump / left.inp / mo_tri
 dump / stl / left.stl / mo_tri
 cmo / delete / mo_tri
@@ -199,12 +201,12 @@ cmo / delete / mo_inlet
 
 cmo / copy/ mo_inlet /mo_surf
 cmo / select / mo_inlet 
-eltset/ e_delete/ itetclr ne 5
+eltset/ e_delete/ itetclr ne 3
 rmpoint / element / eltset get e_delete
 rmpoint / compress
-cmo / status / brief 
+cmo / status / brief
 hextotet / 2 / mo_tri  / mo_inlet
-cmo / select / mo_tri 
+cmo / select / mo_tri
 // dump / right.inp / mo_tri
 dump / stl / right.stl / mo_tri
 cmo / delete / mo_tri
@@ -262,8 +264,8 @@ def write_lagrit_script_extract_exterior(self):
     bottom_surface_height = min(min(bottom),min(top))*1.2
 
     lagrit_script = f"""
-define / NX / {self.nx}
-define / NY / {self.ny}
+define / NX / {self.nx + 1}
+define / NY / {self.ny + 1}
 
 define / X1 / {self.lx:0.2f} 
 define / Y1 / {self.ly:0.2f}  
@@ -504,9 +506,14 @@ def dump_stl(self, interior=True, exterior=False, cleanup_run=True):
     """
 
     print("--> Dumping fracture surfaces to STL")
-    top = np.reshape(self.top, self.nx*self.ny)   
+    # The surfaces are periodic (FFT synthesis), with nx samples per period
+    # in x. Repeat the first row/column at the end so the STL spans exactly
+    # one period, z(0) == z(lx), and the grid spacing is lx / nx = h; the
+    # LaGriT grids are (nx + 1) x (ny + 1) accordingly (all of them: the
+    # exterior blocks are stacked with these surfaces and must match).
+    top = np.pad(self.top, ((0, 1), (0, 1)), mode="wrap").reshape(-1)
     np.savetxt("top.dat", top, delimiter=" ")
-    bottom = np.reshape(self.bottom, self.nx*self.ny)   
+    bottom = np.pad(self.bottom, ((0, 1), (0, 1)), mode="wrap").reshape(-1)
     np.savetxt("bottom.dat", bottom, delimiter=" ")
 
     self.write_lagrit_script_convert_top_and_bottom_to_avs()

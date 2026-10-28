@@ -161,19 +161,19 @@ def build_matrix(nrows, ncols, h, k,
             # 1) Dirichlet inflow/outflow
             if direction == 'x' and c == 0:
                 A[i, i] = 1.0
-                b[i]    = p_dirichlet_low
+                b[i]    = p_dirichlet_high  
                 continue
             if direction == 'x' and c == ncols - 1:
                 A[i, i] = 1.0
-                b[i]    = p_dirichlet_high
+                b[i]    = p_dirichlet_low
                 continue
             if direction == 'y' and r == 0:
                 A[i, i] = 1.0
-                b[i]    = p_dirichlet_low
+                b[i]    = p_dirichlet_high
                 continue
             if direction == 'y' and r == nrows - 1:
                 A[i, i] = 1.0
-                b[i]    = p_dirichlet_high
+                b[i]    = p_dirichlet_low 
                 continue
 
             # 2) Internal or lateral‐Neumann node
