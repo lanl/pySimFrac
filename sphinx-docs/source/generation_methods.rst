@@ -122,7 +122,7 @@ Example
         Gaussian = SimFrac(method = "gaussian", h= 0.01, lx = 3, ly = 1, units = 'mm')
         Gaussian.mean_aperture = 0.5
         Gaussian.params["mean-aperture"]["value"] = 0.5
-        Gaussian.params["aperture-log-variance"]["value"] = 0.01
+        Gaussian.params["surface-log-variance"]["value"] = 0.01
         Gaussian.params["lambda_x"]["value"] = 0.15
         Gaussian.params["lambda_y"]["value"] = 0.25
         Gaussian.shear = 0.5
@@ -161,7 +161,7 @@ Example
         Gaussian = SimFrac(method = "box", h= 0.01, lx = 3, ly = 1, units = 'mm')
         Gaussian.mean_aperture = 0.5
         Gaussian.params["mean-aperture"]["value"] = 0.5
-        Gaussian.params["aperture-log-variance"]["value"] = 0.01
+        Gaussian.params["surface-log-variance"]["value"] = 0.01
         Gaussian.params["lambda_x"]["value"] = 0.15
         Gaussian.params["lambda_y"]["value"] = 0.25
         Gaussian.shear = 0.5

@@ -23,9 +23,13 @@ def initialize_gaussian_parameters(self):
             'value': 1e-4,
             'description': "Mean Fracture Aperture"
         },
-        'aperture-log-variance': {
+        'surface-log-variance': {
             'value': 0.1,
-            'description': "Variance of Log Aperture Field"
+            'description': "Variance of the log of the surface height field (applied to the surface, not the aperture)"
+        },
+        'aperture-log-variance': {
+            'value': None,
+            'description': "Deprecated alias for 'surface-log-variance'"
         },
         'lambda_x': {
             'value': self.lx / 10,
@@ -69,7 +73,8 @@ def check_gaussian_parameters(self):
         self.params["lambda_y"] = None
 
     self.check_generation_parameter("mean-aperture", 0)
-    self.check_generation_parameter("aperture-log-variance", 0)
+    self.resolve_deprecated_parameter("aperture-log-variance", "surface-log-variance")
+    self.check_generation_parameter("surface-log-variance", 0)
 
     if "seed" not in self.params:
         self.params["seed"] = None
@@ -202,6 +207,8 @@ def create_gaussian(self):
     print(
         "--> Creating fracture surface using a multivariant Guassian Random Field : Starting"
     )
+    # parameters are set after construction, so map the deprecated name here
+    self.resolve_deprecated_parameter("aperture-log-variance", "surface-log-variance")
     self.print_method_params()
 
     ## convert user desired correlation length to generation parameters
@@ -218,7 +225,7 @@ def create_gaussian(self):
                                             self.params['seed']['value'])
 
     self.surface = set_mean_and_var(
-        T, 0, self.params['aperture-log-variance']['value'])
+        T, 0, self.params['surface-log-variance']['value'])
 
     self.mean_aperture = self.params['mean-aperture']['value']
     
