@@ -43,7 +43,7 @@ Or in the pysimfrac.pdf document in the main directory
 Install required libraries:
 
 ```bash
-pip install numpy scipy matplotlib seaborn scikit-gstat vedo
+pip install numpy scipy matplotlib seaborn scikit-gstat
 ```
 
 ### 🔧 Build and Install from Source

@@ -66,7 +66,7 @@ class SimFrac():
 
     from pysimfrac.analysis.geostats_variogram import single_field_variogram, compute_variogram, plot_variogram
 
-    from pysimfrac.analysis.make_plots import plot_aperture_field, plot_surface, plot_3D
+    from pysimfrac.analysis.make_plots import plot_aperture_field, plot_surface
 
     from pysimfrac.analysis.voxelization import pad, voxelize
 

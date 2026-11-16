@@ -3,5 +3,4 @@ scipy
 matplotlib 
 seaborn
 scikit-gstat
-vedo
 trimesh
