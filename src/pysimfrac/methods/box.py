@@ -34,7 +34,7 @@ def initialize_box_parameters(self):
         },
         'lambda_y': {
             'value': self.ly / 10,
-            'description': "Correlation of field in x-direction"
+            'description': "Correlation of field in y-direction"
         },
         'seed': {
             'value':
@@ -62,7 +62,7 @@ def check_box_parameters(self):
         None
     
     """
-    print("--> Checking Box Method Parameters: Startingg")
+    print("--> Checking Box Method Parameters: Starting")
 
     self.check_generation_parameter("lambda_x", 0)
     # if the correlation in y is not provided, we assume it's an isotropic field and set lambda_y = lambda_x

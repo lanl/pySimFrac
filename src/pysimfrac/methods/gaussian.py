@@ -33,7 +33,7 @@ def initialize_gaussian_parameters(self):
         },
         'lambda_y': {
             'value': self.ly / 10,
-            'description': "Correlation of field in x-direction"
+            'description': "Correlation of field in y-direction"
         },
         'seed': {
             'value':
@@ -61,7 +61,7 @@ def check_gaussian_parameters(self):
         None
     
     """
-    print("--> Checking Gaussian Method Parameters: Startingg")
+    print("--> Checking Gaussian Method Parameters: Starting")
 
     self.check_generation_parameter("lambda_x", 0)
     # if the correlation in y is not provided, we assume it's an isotropic field and set lambda_y = lambda_x
@@ -109,7 +109,7 @@ def set_mean_and_var(array, mu, sigma):
     return output
 
 
-def guassian_surface_2D(lx, ly, nx, ny, sdx, sdy, seed):
+def gaussian_surface_2D(lx, ly, nx, ny, sdx, sdy, seed):
     """ Fourier Surface 2D 
      Generalized from Hyman and Winter J. Comput. Phys. 2014
 
@@ -150,8 +150,9 @@ def guassian_surface_2D(lx, ly, nx, ny, sdx, sdy, seed):
     ## create field of i.i.d variables from U[0,1]
     U = np.random.random((ny, nx))
     # make background arrays
-    X = np.linspace(-0.5 * lx, 0.5 * lx, nx)
-    Y = np.linspace(-0.5 * ly, 0.5 * ly, ny)
+    # the FFT field repeats every nx points, so spacing is lx/nx (not lx/(nx-1))
+    X = np.arange(nx) * lx / nx - 0.5 * lx
+    Y = np.arange(ny) * ly / ny - 0.5 * ly
     # convert to a mesh grid
     xv, yv = np.meshgrid(X, Y)
     # lambda function the Gaussian Kernal
@@ -205,15 +206,15 @@ def create_gaussian(self):
     self.print_method_params()
 
     ## convert user desired correlation length to generation parameters
-    ## This relationship is empirical
-    sdx = self.params['lambda_x']['value']**(3 / 2)
+    ## A Gaussian kernel with standard deviation s has a 1/e correlation length of 2s
+    sdx = self.params['lambda_x']['value'] / 2
     if self.params['lambda_y']['value'] is None:
         sdy = sdx
     else:
-        sdy = self.params['lambda_y']['value']**(3 / 2)
+        sdy = self.params['lambda_y']['value'] / 2
 
     ## create Standard normal surface
-    T, self.X, self.Y = guassian_surface_2D(self.lx, self.ly, self.nx, self.ny,
+    T, self.X, self.Y = gaussian_surface_2D(self.lx, self.ly, self.nx, self.ny,
                                             sdx, sdy,
                                             self.params['seed']['value'])
 
