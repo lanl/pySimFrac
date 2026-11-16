@@ -24,9 +24,13 @@ def initialize_box_parameters(self):
             'value': 1,
             'description': "Mean Fracture Aperture"
         },
-        'aperture-log-variance': {
+        'surface-log-variance': {
             'value': 0.1,
-            'description': "Variance of Log Aperture Field"
+            'description': "Variance of the log of the surface height field (applied to the surface, not the aperture)"
+        },
+        'aperture-log-variance': {
+            'value': None,
+            'description': "Deprecated alias for 'surface-log-variance'"
         },
         'lambda_x': {
             'value': self.lx / 10,
@@ -70,7 +74,8 @@ def check_box_parameters(self):
         self.params["lambda_y"] = None
 
     self.check_generation_parameter("mean-aperture", 0)
-    self.check_generation_parameter("aperture-log-variance", 0)
+    self.resolve_deprecated_parameter("aperture-log-variance", "surface-log-variance")
+    self.check_generation_parameter("surface-log-variance", 0)
 
     if "seed" not in self.params:
         self.params["seed"] = None
@@ -174,6 +179,8 @@ def create_box(self):
 
     """
     print("--> Creating fracture surface using a Box Kernel : Starting")
+    # parameters are set after construction, so map the deprecated name here
+    self.resolve_deprecated_parameter("aperture-log-variance", "surface-log-variance")
     self.print_method_params()
     ## create Standard normal surface
     T, self.X, self.Y = box_surface(self.lx, self.ly, self.nx, self.ny, self.h,
@@ -182,7 +189,7 @@ def create_box(self):
                                     self.params['seed']['value'])
 
     self.surface = set_mean_and_var(
-        T, 0, self.params['aperture-log-variance']['value'])
+        T, 0, self.params['surface-log-variance']['value'])
 
     ## apply shear if non-zero
     self.mean_aperture = self.params['mean-aperture']['value']
