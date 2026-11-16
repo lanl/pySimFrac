@@ -45,6 +45,43 @@ def print_warning(warning_string):
     print(f"Warning --- {warning_string}")
 
 
+def resolve_deprecated_parameter(self, old_name, new_name):
+    """ Copy a value set under a deprecated parameter name onto its new name.
+
+    Parameters
+    ----------------
+        old_name : str
+            Deprecated parameter name
+        new_name : str
+            Current parameter name
+
+    Returns
+    -----------
+        None
+
+    Notes
+    -------------
+        If the deprecated key holds a value (not None), a warning is printed and
+        the value overrides the new key. The deprecated key is kept (reset to
+        None) so scripts that assign to it after construction still work.
+    """
+    if old_name in self.params:
+        old_value = self.params[old_name].get('value') if isinstance(
+            self.params[old_name], dict) else self.params[old_name]
+        if old_value is not None:
+            print_warning(
+                f"Parameter '{old_name}' is deprecated and will be removed in a future release. "
+                f"Use '{new_name}' instead. Using value {old_value}.")
+            if new_name not in self.params:
+                self.params[new_name] = {'value': old_value, 'description': ''}
+            else:
+                self.params[new_name]['value'] = old_value
+            if isinstance(self.params[old_name], dict):
+                self.params[old_name]['value'] = None
+            else:
+                self.params[old_name] = None
+
+
 def check_generation_parameter(self, name, min_val=None, max_val=None):
     """ Check parameter dictionary that the required key exists and has an acceptable value.
     

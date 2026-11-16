@@ -47,7 +47,7 @@ class SimFrac():
     """
     from pysimfrac.general.legal import legal
 
-    from pysimfrac.general.helper_functions import check_generation_parameter
+    from pysimfrac.general.helper_functions import check_generation_parameter, resolve_deprecated_parameter
 
     ##object functions
     from pysimfrac.methods.surface_generation import create_fracture, initialize_method, print_method_params, initialize_parameters
