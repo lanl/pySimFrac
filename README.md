@@ -57,7 +57,7 @@ pip install build
 
 # Build and install
 python -m build
-pip install dist/pysimfrac-1.1-py3-none-any.whl
+pip install dist/pysimfrac-1.2-py3-none-any.whl
 ```
 
 ---

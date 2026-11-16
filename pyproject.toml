@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pysimfrac"
-version = "1.1"
+version = "1.2"
 description = "pySimFrac is a Python package to generate and analyze rough surfaces for single fractures."
 authors = [
     { name = "Jeffrey Hyman", email = "jhyman@lanl.gov" },
