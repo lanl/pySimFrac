@@ -20,8 +20,7 @@ dependencies = [
     "scipy",
     "matplotlib",
     "seaborn",
-    "scikit-gstat",
-    "vedo"
+    "scikit-gstat"
 ]
 
 [tool.setuptools]

@@ -1,56 +1,6 @@
 import matplotlib.pyplot as plt
-from vedo import Plotter, Volume
 
 from pysimfrac.general.helper_functions import print_error
-
-
-def Euclidean_distance(frac_3D):
-    from scipy.ndimage import distance_transform_edt
-    return distance_transform_edt(frac_3D == 0)
-
-def plot_3D(self, edist=True):
-    """ 
-    
-
-    Parameters
-    ------------
-        edist : booleam
-            DESCRIPTION. The default is True.
-
-    Returns
-    -------
-        None
-
-    """
-
-    vdp = Plotter(shape=(1, 1),
-                  axes=9,
-                  bg='peachpuff',
-                  bg2='blue9',
-                  screensize=(1200 * 4, 900 * 4),
-                  offscreen=False)
-
-    if edist:
-        to_plot = Euclidean_distance(self.frac_3D)
-    else:
-        to_plot = (self.frac_3D == 0)
-
-    lego = Volume(to_plot.T).legosurface(vmin=1, vmax=5).cmap('turbo',
-                                                              vmin=-1,
-                                                              vmax=5)
-
-    lego += Volume(self.frac_3D.T == 0).legosurface(
-        vmin=1, vmax=2).c('lightgray').opacity(0.05)
-
-    cam = dict(
-        pos=(235.8, -687.4, 266.2),
-        focalPoint=(99.50, 99.50, 46.50),
-        viewup=(-0.04663, 0.2611, 0.9642),
-        distance=828.3,
-        clippingRange=(578.0, 1145),
-    )
-
-    vdp.show(lego, camera=cam)
 
 
 def plot_aperture_field(self, figname=None):
